@@ -1,3 +1,4 @@
+import tkinter
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import scrolledtext
@@ -6,6 +7,18 @@ from api import DNNTest
 import threading
 
 dnnTest = DNNTest("DNNTesting")
+import threading
+
+# Define a custom Thread class that can return a result
+class ThreadWithResult(threading.Thread):
+    def __init__(self, target, args=()):
+        super(ThreadWithResult, self).__init__()
+        self.target = target
+        self.args = args
+        self.result = None
+
+    def run(self):
+        self.result = self.target(*self.args)
 
 
 class AutoTestUnreliableInferenceGUI:
@@ -67,7 +80,8 @@ class AutoTestUnreliableInferenceGUI:
         start_analysis_button = tk.Button(network_analyzer_frame, text="Start Analysis", command=self.start_analysis)
         start_analysis_button.pack()
 
-        self.analysis_output_textbox = scrolledtext.ScrolledText(network_analyzer_frame, height=20, width=50)
+        # tedtbox_status: readonly
+        self.analysis_output_textbox = scrolledtext.ScrolledText(network_analyzer_frame, height=20, width=50, state=tk.DISABLED)
         self.analysis_output_textbox.pack()
 
         # Creating the "Network Display" section
@@ -76,7 +90,8 @@ class AutoTestUnreliableInferenceGUI:
 
         network_display_label = tk.Label(network_display_frame, text="Network Display")
         network_display_label.pack()
-        self.network_display_textbox = scrolledtext.ScrolledText(network_display_frame, height=20, width=50)
+        # tedtbox_status: readonly
+        self.network_display_textbox = scrolledtext.ScrolledText(network_display_frame, height=20, width=50, state=tk.DISABLED)
         self.network_display_textbox.pack()
 
     @staticmethod
@@ -102,26 +117,34 @@ class AutoTestUnreliableInferenceGUI:
             message = "Network cannot be correctly saved, please check if your code is correct"
             messagebox.showerror("Error", message)
 
-    def clear_network_analysis_textbox(self):
-        self.analysis_output_textbox.delete('1.0', 'end')
-        self.network_display_textbox.delete('1.0', 'end')
-        self.analysis_output_textbox.insert('end', "Analyzing network: ")
-        self.network_display_textbox.insert('end', "Network's architecture will be displayed here...")
+    @staticmethod
+    def _update_readonly_textbox(textbox: tkinter.Text, content: str) -> None:
+        textbox.configure(state=tk.NORMAL)
+        textbox.delete('1.0', 'end')
+        textbox.insert('end', content)
+        textbox.configure(state=tk.DISABLED)
 
     def start_analysis(self, dest_dir="./DEBAR/computation_graphs_and_TP_list/computation_graphs"):
         # Add your 'hoo' function here
         model = self.model_var.get()
-        try:
-            model_name = f"{model}.pbtxt"
-            result = dnnTest.numerical_analysis(model_name)
-            self.analysis_output_textbox.delete('1.0', 'end')
-            self.network_display_textbox.delete('1.0', 'end')
-            self.analysis_output_textbox.insert('end', "Analysis complete for network: " + model + "\n" + result.decode('utf-8'))
-            with open(os.path.join(dest_dir, model_name), "r") as file:
-                content = file.read()
-            self.network_display_textbox.insert('end', content)
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
+        model_name = f"{model}.pbtxt"
+
+        def thread_func(name: str) -> str:
+            try:
+                res = dnnTest.numerical_analysis(name)
+                self._update_readonly_textbox(self.analysis_output_textbox, "Analysis complete for network: " + model + "\n" + res.decode('utf-8'))
+            except Exception as e:
+                res = "Error", str(e)
+            return res
+
+        # Create a ThreadWithResult object to call the function
+        t = ThreadWithResult(target=thread_func, args=(model_name, ))
+        t.start()
+        with open(os.path.join(dest_dir, model_name), "r") as file:
+            content = file.read()
+        self._update_readonly_textbox(self.network_display_textbox, f"The architecture of model is:\n {content}")
+        self._update_readonly_textbox(self.analysis_output_textbox, f"Analyzing network: {model} ...")
+
 
     def image_mutation_page(self):
         # Creating a new Tkinter window
