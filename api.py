@@ -14,31 +14,20 @@ class DNNTest(object):
         return result
 
     def detect_yolov7(self, img_path, weights_path, size=320, confidence=0.25):
-        if os.path.isfile(img_path):
-            # if the image path is a file, invoke detect_single.sh,
-            # otherwise it is a directory, invoke detect_parallel_yolov7.sh
-            if not img_path.endswith(".jpg"):
-                raise ValueError(f"Invalid image format: {img_path}. The image should be .jpg format.")
-            img_path = img_path.replace("MetaHand", "")
-            weights_path = weights_path.replace("MetaHand", "")
-            cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && python -u -m scripts.evaluation.detect_single " \
-                  f"--img_dir ${img_path} " \
-                  f"--weights_path ${weights_path} " \
-                  f"--size ${size} " \
-                  f"--confidence ${confidence} " \
-                  f"--jobs=8'"
+        cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && python -u -m scripts.evaluation.detect_parallel_yolov7" \
+              f"--img_dir ${img_path} " \
+              f"--weights_path ${weights_path} " \
+              f"--size ${size} " \
+              f"--confidence ${confidence} " \
+              f"--jobs=8'"
 
-            cmd = f"cd MetaHand && python -u -m scripts.evaluation.detect_single " \
-                  f"--img_dir ${img_path} " \
-                  f"--weights_path ${weights_path} " \
-                  f"--size ${size} " \
-                  f"--confidence ${confidence} " \
-                  f"--jobs=8"
-            subprocess.call(cmd, shell=True)
-        elif os.path.isdir(img_path):
-            raise NotImplementedError("Haven't implement the parallel detection.")
-        else:
-            raise ValueError(f"Invalid Image Path: {img_path}")
+        cmd = f"cd MetaHand && python -u -m scripts.evaluation.detect_parallel_yolov7 " \
+              f"--img_dir ${img_path} " \
+              f"--weights_path ${weights_path} " \
+              f"--size ${size} " \
+              f"--confidence ${confidence} " \
+              f"--jobs=8"
+        subprocess.call(cmd, shell=True)
 
     def train_yolov7(self, train_path, valid_path):
         pass
