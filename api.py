@@ -13,6 +13,30 @@ class DNNTest(object):
         result = subprocess.check_output(cmd, shell=True)
         return result
 
+    def detect_yolov7(self, img_path, weights_path, size=320, confidence=0.25):
+        if os.path.isfile(img_path):
+            # if the image path is a file, invoke detect_single.sh,
+            # otherwise it is a directory, invoke detect_parallel_yolov7.sh
+            if not img_path.endswith(".jpg"):
+                raise ValueError(f"Invalid image path: {img_path}. The image should be .jpg format.")
+
+            cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && python -u -m scripts.evaluation.detect_single " \
+                  f"--img_dir ${img_path} " \
+                  f"--weights_path ${weights_path} " \
+                  f"--size ${size} " \
+                  f"--confidence ${confidence} " \
+                  f"--jobs=8'"
+
+            cmd = f"cd MetaHand && python -u -m scripts.evaluation.detect_single " \
+                  f"--img_dir ${img_path} " \
+                  f"--weights_path ${weights_path} " \
+                  f"--size ${size} " \
+                  f"--confidence ${confidence} " \
+                  f"--jobs=8"
+            subprocess.call(cmd, shell=True)
+        else:
+            raise NotImplementedError("Haven't implement the parallel detection.")
+
     def train_yolov7(self, train_path, valid_path):
         pass
     
@@ -23,5 +47,5 @@ class DNNTest(object):
 if __name__ == "__main__":
     container_name = "DNNTesting"
     dnnTest = DNNTest(container_name)
-    dnnTest.numerical_analysis("TensorFuzz.pbtxt")
-
+    # dnnTest.numerical_analysis("TensorFuzz.pbtxt")
+    dnnTest.detect_yolov7("./tools/yolov7/coco/images/val2017/000000289222.jpg", "./tools/yolov7/runs/train/yolov7/weights/best.pt")
