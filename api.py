@@ -34,11 +34,11 @@ class DNNTest(object):
         if not os.path.exists(data_path):
             if not os.path.exists(data_path.replace("/root", os.getcwd())):
                 raise ValueError(f"The data path: {data_path} does not exist!")
-        cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && python -m torch.distributed.launch " \
-              f"--nproc_per_node 3 --master_port 9527 train.py --workers 8 --device 0,1,2 " \
-              f"--sync-bn --batch-size {batch_size} --data {data_path} " \
-              f"--img {img_size} --cfg {cfg_path} --weights \'\' " \
-              f"--name {proj_name} --hyp data/hyp.scratch.p5.yaml'"
+        cmd = f'podman exec {self.container_name}  /bin/sh -c \'cd MetaHand/tools/yolov7 && /opt/conda/envs/metahand/bin/python -m torch.distributed.launch ' \
+              f'--nproc_per_node 3 --master_port 9527 train.py --workers 8 --device 0,1,2 ' \
+              f'--sync-bn --batch-size {batch_size} --data {data_path} ' \
+              f'--img {img_size} --cfg {cfg_path} --weights "" ' \
+              f'--name {proj_name} --hyp data/hyp.scratch.p5.yaml\''
         subprocess.call(cmd, shell=True)
 
     def mutate_image(self, img_dir):
