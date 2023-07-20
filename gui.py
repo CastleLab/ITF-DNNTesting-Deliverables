@@ -9,6 +9,7 @@ import yaml
 
 dnnTest = DNNTest("DNNTesting")
 
+
 # Define a custom Thread class that can return a result
 class ThreadWithResult(threading.Thread):
     def __init__(self, target, args=()):
@@ -32,23 +33,26 @@ class AutoTestUnreliableInferenceGUI:
         self.model_evaluation_page = None
         self.model_repairing_page = None
 
-
         button_frame = tk.Frame(self.master)
         button_frame.pack()
         # Creating the buttons on the main page
-        self.network_analysis_button = tk.Button(button_frame, text="Network Analysis", command=self.show_network_analysis_page)
+        self.network_analysis_button = tk.Button(button_frame, text="Network Analysis",
+                                                 command=self.show_network_analysis_page)
         self.network_analysis_button.pack()
 
-        self.image_mutation_button = tk.Button(button_frame, text="Image Mutation", command=self.show_image_mutation_page)
+        self.image_mutation_button = tk.Button(button_frame, text="Image Mutation",
+                                               command=self.show_image_mutation_page)
         self.image_mutation_button.pack()
 
         self.model_train_button = tk.Button(button_frame, text="Model Training", command=self.show_model_training_page)
         self.model_train_button.pack()
 
-        self.model_evaluation_button = tk.Button(button_frame, text="Model Evaluation", command=self.show_model_evaluation_page)
+        self.model_evaluation_button = tk.Button(button_frame, text="Model Evaluation",
+                                                 command=self.show_model_evaluation_page)
         self.model_evaluation_button.pack()
 
-        self.model_repair_button = tk.Button(button_frame, text="Model Repairing", command=self.show_model_repairing_page)
+        self.model_repair_button = tk.Button(button_frame, text="Model Repairing",
+                                             command=self.show_model_repairing_page)
         self.model_repair_button.pack()
 
         # Add more buttons here for your other pages...
@@ -79,6 +83,7 @@ class AutoTestUnreliableInferenceGUI:
         textbox.delete('1.0', 'end')
         textbox.insert('end', content)
         textbox.configure(state=tk.DISABLED)
+
 
 class NetworkAnalysisPage(tk.Frame):
     # Implementation of Network Analysis Section
@@ -124,8 +129,9 @@ class NetworkAnalysisPage(tk.Frame):
         start_analysis_button = tk.Button(network_analyzer_frame, text="Start Analysis", command=self.start_analysis)
         start_analysis_button.pack()
 
-        # tedtbox_status: readonly
-        self.network_analysis_output_textbox = scrolledtext.ScrolledText(network_analyzer_frame, height=20, width=50, state=tk.DISABLED)
+        # textbox_status: readonly
+        self.network_analysis_output_textbox = scrolledtext.ScrolledText(network_analyzer_frame, height=20, width=50,
+                                                                         state=tk.DISABLED)
         self.network_analysis_output_textbox.pack()
 
         # Creating the "Network Display" section
@@ -134,8 +140,9 @@ class NetworkAnalysisPage(tk.Frame):
 
         network_display_label = tk.Label(network_display_frame, text="Network Display")
         network_display_label.pack()
-        # tedtbox_status: readonly
-        self.network_display_textbox = scrolledtext.ScrolledText(network_display_frame, height=20, width=50, state=tk.DISABLED)
+        # textbox_status: readonly
+        self.network_display_textbox = scrolledtext.ScrolledText(network_display_frame, height=20, width=50,
+                                                                 state=tk.DISABLED)
         self.network_display_textbox.pack()
 
     @staticmethod
@@ -177,18 +184,21 @@ class NetworkAnalysisPage(tk.Frame):
             return res
 
         # Create a ThreadWithResult object to call the function
-        t = ThreadWithResult(target=thread_func, args=(model_name, ))
+        t = ThreadWithResult(target=thread_func, args=(model_name,))
         t.start()
         with open(os.path.join(dest_dir, model_name), "r") as file:
             content = file.read()
-        AutoTestUnreliableInferenceGUI.update_readonly_textbox(self.network_display_textbox, f"The architecture of model is:\n {content}")
-        AutoTestUnreliableInferenceGUI.update_readonly_textbox(self.network_analysis_output_textbox, f"Analyzing network: {model} ...")
+        AutoTestUnreliableInferenceGUI.update_readonly_textbox(self.network_display_textbox,
+                                                               f"The architecture of model is:\n {content}")
+        AutoTestUnreliableInferenceGUI.update_readonly_textbox(self.network_analysis_output_textbox,
+                                                               f"Analyzing network: {model} ...")
+
 
 class ImageMutationPage(tk.Frame):
     def __init__(self, master=None):
         super().__init__()
         self.master = master
-        self.image_mutation_window= None
+        self.image_mutation_window = None
         self.image_mutation_page()
 
     # Implementation of Image Mutation Section
@@ -200,6 +210,7 @@ class ImageMutationPage(tk.Frame):
         # Creating the "Creating a Network" section
         create_network_frame = tk.Frame(self.image_mutation_window)
         create_network_frame.pack(side="left")
+
 
 class ModelTrainingPage(tk.Frame):
     def __init__(self, master=None):
@@ -248,44 +259,48 @@ class ModelTrainingPage(tk.Frame):
                 data_list.append(os.path.splitext(filename)[0])
         return data_list
 
+
 class ModelEvaluationPage(tk.Frame):
     def __init__(self, master=None):
         super().__init__()
         self.master = master
-        self.model_evaluation_window= None
+        self.model_evaluation_window = None
         self.model_evaluation_page()
 
     # Implementation of Model Evaluation Section
     def model_evaluation_page(self):
         # Creating a new Tkinter window
-        self.model_evaluation_window= tk.Toplevel(self.master)
+        self.model_evaluation_window = tk.Toplevel(self.master)
         self.model_evaluation_window.title("Detecting Numerical Bugs in Neural Networks")
 
         # Creating the "Creating a Network" section
         create_network_frame = tk.Frame(self.model_evaluation_window)
         create_network_frame.pack(side="left")
 
+
 class ModelRepairingPage(tk.Frame):
     def __init__(self, master=None):
         super().__init__()
         self.master = master
-        self.model_repair_window= None
+        self.model_repair_window = None
         self.model_repair_page()
 
     # Implementation of Model Repairing Section
     def model_repair_page(self):
         # Creating a new Tkinter window
-        self.model_repair_window= tk.Toplevel(self.master)
+        self.model_repair_window = tk.Toplevel(self.master)
         self.model_repair_window.title("Detecting Numerical Bugs in Neural Networks")
 
         # Creating the "Creating a Network" section
         create_network_frame = tk.Frame(self.model_repair_window)
         create_network_frame.pack(side="left")
 
+
 def run_gui():
     root = tk.Tk()
-    gui = AutoTestUnreliableInferenceGUI(root)
+    AutoTestUnreliableInferenceGUI(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     run_gui()
