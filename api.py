@@ -32,7 +32,8 @@ class DNNTest(object):
     def train_yolov7(self, proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml", img_size=640, batch_size=66, cfg_path="cfg/training/yolov7.yaml"):
         # The path can be an absolute path or relative path with the root to be ./MetaHand/tools/yolov7
         if not os.path.exists(data_path):
-            raise ValueError(f"The data path: {data_path} does not exist!")
+            if not os.path.exists(data_path.replace("/root", os.getcwd())):
+                raise ValueError(f"The data path: {data_path} does not exist!")
         cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && python -m torch.distributed.launch " \
               f"--nproc_per_node 3 --master_port 9527 train.py --workers 8 --device 0,1,2 " \
               f"--sync-bn --batch-size {batch_size} --data {data_path} " \
