@@ -29,7 +29,7 @@ class DNNTest(object):
               f"--jobs=8"
         subprocess.call(cmd, shell=True)
 
-    def train_yolov7(self, data_path="/root/MetaHand/tools/yolov7/data/coco.yaml", img_size=320, batch_size=66, cfg_path="cfg/training/yolov7.yaml"):
+    def train_yolov7(self, proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml", img_size=640, batch_size=66, cfg_path="cfg/training/yolov7.yaml"):
         # The path can be an absolute path or relative path with the root to be ./MetaHand/tools/yolov7
         if not os.path.exists(data_path):
             raise ValueError(f"The data path: {data_path} does not exist!")
@@ -37,13 +37,7 @@ class DNNTest(object):
               f"--nproc_per_node 3 --master_port 9527 train.py --workers 8 --device 0,1,2 " \
               f"--sync-bn --batch-size {batch_size} --data {data_path} " \
               f"--img {img_size} --cfg {cfg_path} --weights \'\' " \
-              f"--name yolov7 --hyp data/hyp.scratch.p5.yaml'"
-
-        cmd = f"cd MetaHand/tools/yolov7/ && python -m torch.distributed.launch " \
-              f"--nproc_per_node 3 --master_port 9527 train.py --workers 8 --device 0,1,2 " \
-              f"--sync-bn --batch-size {batch_size} --data {data_path} " \
-              f"--img {img_size} --cfg {cfg_path} --weights '' " \
-              f"--name yolov7 --hyp data/hyp.scratch.p5.yaml"
+              f"--name {proj_name} --hyp data/hyp.scratch.p5.yaml'"
         subprocess.call(cmd, shell=True)
 
     def mutate_image(self, img_dir):
@@ -55,4 +49,4 @@ if __name__ == "__main__":
     dnnTest = DNNTest(container_name)
     # dnnTest.numerical_analysis("TensorFuzz.pbtxt")
     # dnnTest.detect_yolov7("./MetaHand/tools/yolov7/coco/images/val2017/000000289222.jpg", "./MetaHand/tools/yolov7/runs/train/yolov7/weights/best.pt")
-    dnnTest.train_yolov7(data_path="/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/tools/yolov7/pilotstudy/pilot.yaml")
+    dnnTest.train_yolov7(proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml")
