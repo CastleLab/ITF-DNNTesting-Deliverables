@@ -87,7 +87,7 @@ class DNNTest(object):
         mutate_name = f"object_gaussian_160_fixMutRatio_centerXY_{mutate_ratio}"
         base_dir = f"/root/MetaHand/tools/yolov7/runs/train/{mutate_type}/{mutate_name}_{threshold}"
         v7_base = f"./runs/train/{mutate_type}/{mutate_name}_{threshold}"
-        os.makedirs(base_dir, exist_ok=True)
+        os.makedirs(base_dir.replace("/root/", ""), exist_ok=True)
         shutil.move(violation_path, os.path.join(base_dir, f"{mutate_name}_violations.txt"))
 
         # new train file will be saved in ./{base_dir}/train.txt
