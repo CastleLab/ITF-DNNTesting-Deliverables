@@ -38,6 +38,40 @@ class DNNTest(object):
               f'--name {proj_name} --hyp data/hyp.scratch.p5.yaml\''
         subprocess.call(cmd, shell=True)
 
+    def evaluate_yolov7(
+            self, data_dir="/root/MetaHand/tools/yolov7/pilotstudy",
+            weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy/weights/best.pt",
+            mutate_type="ObjectGaussianMutation",
+            mutate_ratio="03",
+            threshold=0.3
+    ):
+        log_dir = f"/root/MetaHand/logs/yolov7/{mutate_type}"
+        output_dir = "/root/MetaHand/tools/yolov7/runs/detect"
+        mutate_name = f"object_gaussian_160_fixMutRatio_CenterXY_{mutate_ratio}"
+        mutate_image = f"{data_dir}/{mutate_type}/{mutate_type}/{mutate_name}"
+        origin_image = f"{data_dir}/images/train"
+        origin_label = f"{data_dir}/labels/train"
+        MR = 2
+        os.makedirs(log_dir)
+        os.makedirs(output_dir)
+        cmd = f"docker exec {self.container_name} /bin/sh -c " \
+              f"'" \
+              f"cd MetaHand && " \
+              f"/opt/conda/envs/metahand/bin/python -u -m scripts.evaluation.evaluate " \
+              f"-oi={origin_image} " \
+              f"-mi={mutate_image} " \
+              f"-ol={origin_label} " \
+              f"-w={weights_path} " \
+              f"-od={output_dir}" \
+              f"--dataset=yolov7 " \
+              f"--mr={MR} " \
+              f"--jobs=8 " \
+              f"--threshold={threshold} > {log_dir}/{mutate_name}_{threshold}.log" \
+              f"'"
+        subprocess.call(cmd, shell=True)
+        violation_file = f"/root/MetaHand/{mutate_name}_violations.txt"
+        return violation_file
+
     def mutate_image(self, img_dir):
         pass
 
@@ -46,6 +80,6 @@ if __name__ == "__main__":
     container_name = "DNNTesting"
     dnnTest = DNNTest(container_name)
     # dnnTest.numerical_analysis("TensorFuzz.pbtxt")
-    path = dnnTest.detect_yolov7("/root/MetaHand/tools/yolov7/pilotstudy/images/val/ff1af9a2-frame2811.jpg", "/root/MetaHand/tools/yolov7/runs/train/pilotstudy/weights/best.pt")
-    print(path)
+    # path = dnnTest.detect_yolov7("/root/MetaHand/tools/yolov7/pilotstudy/images/val/ff1af9a2-frame2811.jpg", "/root/MetaHand/tools/yolov7/runs/train/pilotstudy/weights/best.pt")
     # dnnTest.train_yolov7(proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml")
+    dnnTest.evaluate_yolov7()
