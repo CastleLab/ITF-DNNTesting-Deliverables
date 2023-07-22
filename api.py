@@ -47,7 +47,7 @@ class DNNTest(object):
     ):
         log_dir = f"/root/MetaHand/logs/yolov7/{mutate_type}"
         output_dir = "/root/MetaHand/tools/yolov7/runs/detect"
-        mutate_name = f"object_gaussian_160_fixMutRatio_CenterXY_{mutate_ratio}"
+        mutate_name = f"object_gaussian_160_fixMutRatio_centerXY_{mutate_ratio}"
         mutate_image = f"{data_dir}/{mutate_type}/{mutate_name}"
         origin_image = f"{data_dir}/images/train"
         origin_label = f"{data_dir}/labels/train"
