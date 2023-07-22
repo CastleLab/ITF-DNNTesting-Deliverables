@@ -105,7 +105,7 @@ class DNNTest(object):
         src_yaml = os.path.join(data_dir, "data.yaml")
         dst_yaml = os.path.join(base_dir, "data.yaml")
         shutil.copy(src_yaml.replace("/root/", ""), dst_yaml.replace("/root/", ""))
-        with open(dst_yaml.replace("/root", ""), "r") as file:
+        with open(dst_yaml.replace("/root/", ""), "r") as file:
             content = file.read().rstrip().splitlines()
         new_yaml = ""
         for line in content:
@@ -113,7 +113,7 @@ class DNNTest(object):
                 new_yaml += f"train: {train_txt}\n"
             else:
                 new_yaml += line + "\n"
-        with open(dst_yaml.replace("/root", ""), "w") as file:
+        with open(dst_yaml.replace("/root/", ""), "w") as file:
             file.write(new_yaml)
         self.train_yolov7(proj_name=f"yolov7_{mutate_name}", data_path=dst_yaml, img_size=img_size)
 
