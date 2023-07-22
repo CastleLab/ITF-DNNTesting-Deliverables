@@ -40,7 +40,7 @@ class DNNTest(object):
 
     def evaluate_yolov7(
             self, data_dir="/root/MetaHand/tools/yolov7/pilotstudy",
-            weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy/weights/best.pt",
+            weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt",
             mutate_type="ObjectGaussianMutation",
             mutate_ratio="03",
             threshold=0.3
@@ -52,17 +52,17 @@ class DNNTest(object):
         origin_image = f"{data_dir}/images/train"
         origin_label = f"{data_dir}/labels/train"
         MR = 2
-        os.makedirs(log_dir)
-        os.makedirs(output_dir)
-        cmd = f"docker exec {self.container_name} /bin/sh -c " \
+        os.makedirs(log_dir.replace("/root/", ""), exist_ok=True)
+        os.makedirs(output_dir.replace("/root/", ""), exist_ok=True)
+        cmd = f"podman exec {self.container_name} /bin/sh -c " \
               f"'" \
-              f"cd MetaHand && " \
+              f"cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH " \
               f"/opt/conda/envs/metahand/bin/python -u -m scripts.evaluation.evaluate " \
               f"-oi={origin_image} " \
               f"-mi={mutate_image} " \
               f"-ol={origin_label} " \
               f"-w={weights_path} " \
-              f"-od={output_dir}" \
+              f"-od={output_dir} " \
               f"--dataset=yolov7 " \
               f"--mr={MR} " \
               f"--jobs=8 " \
