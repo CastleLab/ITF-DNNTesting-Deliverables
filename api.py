@@ -61,6 +61,7 @@ class DNNTest(object):
               f"-oi={origin_image} " \
               f"-mi={mutate_image} " \
               f"-ol={origin_label} " \
+              f"-olf=yolov7 " \
               f"-w={weights_path} " \
               f"-od={output_dir} " \
               f"--dataset=yolov7 " \
