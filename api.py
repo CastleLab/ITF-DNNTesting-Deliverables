@@ -128,4 +128,4 @@ if __name__ == "__main__":
     # dnnTest.numerical_analysis("TensorFuzz.pbtxt")
     # path = dnnTest.detect_yolov7("/root/MetaHand/tools/yolov7/pilotstudy/images/val/ff1af9a2-frame2811.jpg", "/root/MetaHand/tools/yolov7/runs/train/pilotstudy/weights/best.pt")
     # dnnTest.train_yolov7(proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml")
-    dnnTest.evaluate_yolov7()
+    dnnTest.repair_yolov7()
