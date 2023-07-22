@@ -1,6 +1,7 @@
 ## API 
 import os
 import subprocess
+import shutil
 
 class DNNTest(object):
     def __init__(self, container_name="DNNTesting"):
@@ -70,8 +71,52 @@ class DNNTest(object):
               f"--threshold={threshold} > {log_dir}/{mutate_name}_{threshold}.log" \
               f"'"
         subprocess.call(cmd, shell=True)
-        violation_file = f"/root/MetaHand/{mutate_name}_violations.txt"
-        return violation_file
+        violation_path = f"/root/MetaHand/{mutate_name}_violations.txt"
+        return violation_path
+
+    def repair_yolov7(
+            self,
+            data_dir="/root/MetaHand/tools/yolov7/pilotstudy",
+            weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt",
+            mutate_type="ObjectGaussianMutation",
+            mutate_ratio="03",
+            threshold=0.3,
+            img_size=640,
+    ):
+        violation_path = self.evaluate_yolov7(data_dir=data_dir, weights_path=weights_path, mutate_type=mutate_type, mutate_ratio=mutate_ratio)
+        mutate_name = f"object_gaussian_160_fixMutRatio_centerXY_{mutate_ratio}"
+        base_dir = f"/root/MetaHand/tools/yolov7/runs/train/{mutate_type}/{mutate_name}_{threshold}"
+        v7_base = f"./runs/train/{mutate_type}/{mutate_name}_{threshold}"
+        os.makedirs(base_dir, exist_ok=True)
+        shutil.move(violation_path, os.path.join(base_dir, f"{mutate_name}_violations.txt"))
+
+        # new train file will be saved in ./{base_dir}/train.txt
+        cmd = f"podman exec {self.container_name} /bin/sh -c " \
+              f"'" \
+              f"cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH " \
+              f"/opt/conda/envs/metahand/bin/python -u -m scripts.train.prepare_train_data " \
+              f"--source_path={base_dir}/{mutate_name}_violations.txt " \
+              f"--origin_source_path={data_dir}/train.txt " \
+              f"--target_dir={base_dir} " \
+              f"--dataset=yolov7 " \
+              f"'"
+        subprocess.call(cmd, shell=True)
+        train_txt = f"{v7_base}/train.txt"
+        src_yaml = os.path.join(data_dir, "data.yaml")
+        dst_yaml = os.path.join(base_dir, "data.yaml")
+        shutil.copy(src_yaml, dst_yaml)
+        with open(dst_yaml, "r") as file:
+            content = file.read().rstrip().splitlines()
+        new_yaml = ""
+        for line in content:
+            if line.startswith("train:"):
+                new_yaml += f"train: {train_txt}\n"
+            else:
+                new_yaml += line + "\n"
+        with open(dst_yaml, "w") as file:
+            file.write(new_yaml)
+        self.train_yolov7(proj_name=f"yolov7_{mutate_name}", data_path=dst_yaml, img_size=img_size)
+
 
     def mutate_image(self, img_dir):
         pass
