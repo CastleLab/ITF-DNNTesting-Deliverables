@@ -88,7 +88,7 @@ class DNNTest(object):
         base_dir = f"/root/MetaHand/tools/yolov7/runs/train/{mutate_type}/{mutate_name}_{threshold}"
         v7_base = f"./runs/train/{mutate_type}/{mutate_name}_{threshold}"
         os.makedirs(base_dir.replace("/root/", ""), exist_ok=True)
-        shutil.move(violation_path, os.path.join(base_dir, f"{mutate_name}_violations.txt"))
+        shutil.move(violation_path.replace("/root/", ""), os.path.join(base_dir.replace("/root/", ""), f"{mutate_name}_violations.txt"))
 
         # new train file will be saved in ./{base_dir}/train.txt
         cmd = f"podman exec {self.container_name} /bin/sh -c " \
@@ -104,7 +104,7 @@ class DNNTest(object):
         train_txt = f"{v7_base}/train.txt"
         src_yaml = os.path.join(data_dir, "data.yaml")
         dst_yaml = os.path.join(base_dir, "data.yaml")
-        shutil.copy(src_yaml, dst_yaml)
+        shutil.copy(src_yaml.replace("/root/", ""), dst_yaml.replace("/root/", ""))
         with open(dst_yaml, "r") as file:
             content = file.read().rstrip().splitlines()
         new_yaml = ""
