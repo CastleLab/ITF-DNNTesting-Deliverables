@@ -10,7 +10,7 @@ class DNNTest(object):
     def numerical_analysis(self, model_name):
         if not model_name.endswith(".pbtxt"):
             raise ValueError(f"Invalid model: {model_name}. The model format should be pbtxt")
-        cmd = f"docker exec {self.container_name} /bin/sh -c 'python analysis_main.py ./computation_graphs_and_TP_list/computation_graphs/{model_name}'"
+        cmd = f"docker exec {self.container_name} /bin/sh -c 'cd DEBAR && CONDA_PREFIX=/opt/conda/envs/debar PATH=/opt/conda/envs/debar/bin:$PATH /opt/conda/envs/debar/bin/python analysis_main.py ./computation_graphs_and_TP_list/computation_graphs/{model_name}'"
         result = subprocess.check_output(cmd, shell=True)
         return result
 
