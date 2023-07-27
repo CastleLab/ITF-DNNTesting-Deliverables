@@ -27,6 +27,19 @@ class DNNTest(object):
         res_path = f"./MetaHand/tools/yolov7/runs/detect/{img_name}/{img_name}"
         return res_path
 
+    def prepare_dataset(self, dataset_name="", image_path="", label_path="", train_val_ratio=0.8):
+        if not image_path.startswith("/root"):
+            image_path = os.path.join("/root", image_path)
+        if not label_path.startswith("/root"):
+            label_path = os.path.join("/root", label_path)
+        cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.dataset.yolov7_dataset_preparation " \
+              f"--src_img_dir {image_path} " \
+              f"--src_label_dir {label_path} " \
+              f"--target_dir ./tools/yolov7/{dataset_name}'"
+        subprocess.call(cmd, shell=True)
+        res_path = f"./MetaHand/tools/yolov7/{dataset_name}"
+        return res_path
+
     def train_yolov7(self, proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml", img_size=640, batch_size=42, num_workers=4, cfg_path="cfg/training/yolov7.yaml"):
         # The path can be an absolute path or relative path with the root to be ./MetaHand/tools/yolov7
         if not os.path.exists(data_path):

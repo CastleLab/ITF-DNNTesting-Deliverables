@@ -77,7 +77,7 @@ class AutoTestUnreliableInferenceGUI:
 
 def run_gui():
     root = tk.Tk()
-    AutoTestUnreliableInferenceGUI(root)
+    AutoTestUnreliableInferenceGUI(root).show_model_training_page()
     root.mainloop()
 
 
