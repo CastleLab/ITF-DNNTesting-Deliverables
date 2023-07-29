@@ -38,6 +38,7 @@ class DNNTest(object):
               f"--target_dir ./tools/yolov7/{dataset_name}'"
         subprocess.call(cmd, shell=True)
         res_path = f"./MetaHand/tools/yolov7/{dataset_name}"
+        shutil.copy(os.path.join(res_path, "data.yaml"), f"./MetaHand/tools/yolov7/data/{dataset_name}.yaml")
         return res_path
 
     def train_yolov7(self, proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml", img_size=640, batch_size=42, num_workers=4, cfg_path="cfg/training/yolov7.yaml"):
