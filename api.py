@@ -129,7 +129,7 @@ class DNNTest(object):
                 new_yaml += line + "\n"
         with open(dst_yaml.replace("/root/", ""), "w") as file:
             file.write(new_yaml)
-        self.train_yolov7(proj_name=f"yolov7_{mutate_name}", data_path=dst_yaml, img_size=img_size)
+        self.train_yolov7(proj_name=f"yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
 
 
     def mutate_image(self, img_dir):
