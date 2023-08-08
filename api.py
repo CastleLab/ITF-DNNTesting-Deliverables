@@ -162,6 +162,6 @@ if __name__ == "__main__":
     # path = dnnTest.detect_yolov7("/root/MetaHand/tools/yolov7/pilotstudy/images/val/ff1af9a2-frame2811.jpg", "/root/MetaHand/tools/yolov7/runs/train/pilotstudy/weights/best.pt")
     # dnnTest.train_yolov7(proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml")
     # dnnTest.evaluate_yolov7()
-    dnnTest.detect_yolov7_dir(weights_path="/root/MetaHand/tools/yolov7/runs/train/yolov7_object_gaussian_160_fixMutRatio_centerXY_03_640/weights/best.pt")
-    # for mutate_ratio in ["01", "02", "04", "05", "06", "07", "08", "09"]:
-    #     dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt", img_size=640, mutate_ratio=mutate_ratio)
+    # dnnTest.detect_yolov7_dir(weights_path="/root/MetaHand/tools/yolov7/runs/train/yolov7_object_gaussian_160_fixMutRatio_centerXY_03_640/weights/best.pt")
+    for mutate_ratio in ["01", "02", "04", "05", "06", "07", "08", "09"]:
+        dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt", img_size=640, mutate_ratio=mutate_ratio)
