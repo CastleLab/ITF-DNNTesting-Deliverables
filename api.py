@@ -27,6 +27,22 @@ class DNNTest(object):
         res_path = f"./MetaHand/tools/yolov7/runs/detect/{img_name}/{img_name}"
         return res_path
 
+    def detect_yolov7_dir(self, img_path, weights_path, size=640, confidence=0.25):
+        model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
+        output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
+        os.makedirs(output_dir, exist_ok=True)
+        cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
+              f"--img_dir {img_path} " \
+              f"--weights_path {weights_path} " \
+              f"--save_dir={output_dir} " \
+              f"--size {size} " \
+              f"--confidence {confidence} " \
+              f"--jobs=8'"
+        subprocess.call(cmd, shell=True)
+        img_name = os.path.basename(img_path)
+        res_path = f"./MetaHand/tools/yolov7/runs/detect/{model_name}/{img_name}/{img_name}"
+        return res_path
+
     def prepare_dataset(self, dataset_name="", image_path="", label_path="", train_val_ratio=0.8):
         if not image_path.startswith("/root"):
             image_path = os.path.join("/root", image_path)
@@ -60,8 +76,9 @@ class DNNTest(object):
             mutate_ratio="03",
             threshold=0.3
     ):
+        model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
         log_dir = f"/root/MetaHand/logs/yolov7/{mutate_type}"
-        output_dir = "/root/MetaHand/tools/yolov7/runs/detect"
+        output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
         mutate_name = f"object_gaussian_160_fixMutRatio_centerXY_{mutate_ratio}"
         mutate_image = f"{data_dir}/{mutate_type}/{mutate_name}"
         origin_image = f"{data_dir}/images/train"
@@ -142,5 +159,6 @@ if __name__ == "__main__":
     # dnnTest.numerical_analysis("TensorFuzz.pbtxt")
     # path = dnnTest.detect_yolov7("/root/MetaHand/tools/yolov7/pilotstudy/images/val/ff1af9a2-frame2811.jpg", "/root/MetaHand/tools/yolov7/runs/train/pilotstudy/weights/best.pt")
     # dnnTest.train_yolov7(proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml")
-    for mutate_ratio in ["01", "02", "04", "05", "06", "07", "08", "09"]:
-        dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt", img_size=640, mutate_ratio=mutate_ratio)
+    dnnTest.evaluate_yolov7()
+    # for mutate_ratio in ["01", "02", "04", "05", "06", "07", "08", "09"]:
+    #     dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt", img_size=640, mutate_ratio=mutate_ratio)
