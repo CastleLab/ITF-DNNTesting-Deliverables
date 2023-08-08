@@ -27,11 +27,10 @@ class DNNTest(object):
         res_path = f"./MetaHand/tools/yolov7/runs/detect/{img_name}/{img_name}"
         return res_path
 
-    def detect_yolov7_dir(self, img_path="/root/MetaHand/tools/yolov7/pilotstudy", weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt", size=640, confidence=0.25):
+    def detect_yolov7_dir(self, img_path="/root/MetaHand/tools/yolov7/pilotstudy/images/train", weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt", size=640, confidence=0.25):
         model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
         output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
-        os.makedirs(output_dir, exist_ok=True)
-        cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
+        cmd = f"podman exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
               f"--img_dir {img_path} " \
               f"--weights_path {weights_path} " \
               f"--save_dir={output_dir} " \
