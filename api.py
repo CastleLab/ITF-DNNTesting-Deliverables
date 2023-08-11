@@ -151,7 +151,16 @@ class DNNTest(object):
         self.train_yolov7(proj_name=f"yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
 
 
-    def mutate_image(self, img_dir):
+    def mutate_image(self, img_path: str, mutate_type: str, mutate_ratio: str) -> str:
+        """
+        Generate mutated images on target {img_path}.
+        If the {img_path} is a directory, this function will mutate all images inside the directory.
+        If the {img_path} is a file, this function will mutate the target image.
+        :param img_path:
+        :param mutate_type:
+        :param mutate_ratio:
+        :return: the directory of mutated images
+        """
         pass
 
 
