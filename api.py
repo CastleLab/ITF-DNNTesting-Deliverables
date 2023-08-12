@@ -151,17 +151,37 @@ class DNNTest(object):
         self.train_yolov7(proj_name=f"yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
 
 
-    def mutate_image(self, img_path: str, mutate_type: str, mutate_ratio: str) -> str:
+    def mutate_image(self, image_path: str, label_path: str, output_path: str, mutate_type: str, mutate_ratio: str, noise_intensity: str, label_format: str) -> str:
         """
         Generate mutated images on target {img_path}.
         If the {img_path} is a directory, this function will mutate all images inside the directory.
         If the {img_path} is a file, this function will mutate the target image.
-        :param img_path:
-        :param mutate_type:
-        :param mutate_ratio:
+        :param img_path
+        :param label_path
+        :param output_path: directory that stores mutated images
+        :param mutate_type: "background" or "object"
+        :param mutate_ratio: 0.0-1.0
+        :param noise_intensity: 0.0-1.0
+        :param label_format: "darknet" or "coco"
         :return: the directory of mutated images
         """
-        pass
+        # python -O ./scripts/mutation/mutation_operation.py --image_path $1 --label_path $2 --mutate_path $3 --random_erase $5 --random_erase_mode fixMutRatio_centerXY --guassian_sigma $6 --object_or_background $4 --dataset $7
+        # python -O ./scripts/mutation/mutation_operation.py --image_path /ssddata1/users/dlproj/MetaHand/data_pilot/images/0a0c5746-frame946.jpg --label_path /ssddata1/users/dlproj/MetaHand/data_pilot/labels/0a0c5746-frame946.txt --mutate_path $3 --random_erase $5 --random_erase_mode fixMutRatio_centerXY --guassian_sigma $6 --object_or_background $4 --dataset $7
+        cmd = ""
+        if os.path.isfile(image_path):
+            cmd = f"podman exec {self.container_name} /bin/bash -c \"python -O /root/scripts/mutation/mutation_operation_single.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
+            #Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation_single.py --image_path /root/data_pilot/images/0a0c5746-frame946.jpg --label_path /root/data_pilot/labels/0a0c5746-frame946.txt --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
+        if os.path.isdir(image_path):
+            cmd = f"podman exec {self.container_name} /bin/bash -c \"python -O /root/scripts/mutation/mutation_operation.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
+            #Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation.py --image_path /root/data_pilot/images --label_path /root/data_pilot/labels --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
+        subprocess.call(cmd, shell=True)
+
+
+
+# if os.path.isdir("data"):
+#     # directory exists
+#         cmd = f"podman exec {self.container_name} /bin/bash -c \"cd /root; ./run/mutate_gui.sh {image_path} {label_path} {output_path} {mutate_type} {mutate_ratio} {noise_intensity} {label_format}\"'"
+        
 
 
 if __name__ == "__main__":
