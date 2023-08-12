@@ -175,6 +175,7 @@ class DNNTest(object):
             cmd = f"podman exec {self.container_name} /bin/bash -c \"python -O /root/scripts/mutation/mutation_operation.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
             #Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation.py --image_path /root/data_pilot/images --label_path /root/data_pilot/labels --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
         subprocess.call(cmd, shell=True)
+        return output_path
 
 
 
