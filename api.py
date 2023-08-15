@@ -1,7 +1,8 @@
 ## API 
 import os
-import subprocess
 import shutil
+import subprocess
+
 
 class DNNTest(object):
     def __init__(self, container_name="DNNTesting"):
@@ -30,7 +31,9 @@ class DNNTest(object):
         res_path = f"./MetaHand/tools/yolov7/runs/detect/{model_name}/{img_name}/{img_name}"
         return res_path
 
-    def detect_yolov7_dir(self, img_path="/root/MetaHand/tools/yolov7/pilotstudy/images/train", weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt", size=640, confidence=0.25):
+    def detect_yolov7_dir(self, img_path="/root/MetaHand/tools/yolov7/pilotstudy/images/train",
+                          weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt",
+                          size=640, confidence=0.25):
         model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
         output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
         cmd = f"podman exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
@@ -59,7 +62,8 @@ class DNNTest(object):
         shutil.copy(os.path.join(res_path, "data.yaml"), f"./MetaHand/tools/yolov7/data/{dataset_name}.yaml")
         return res_path
 
-    def train_yolov7(self, proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml", img_size=640, batch_size=42, num_workers=4, cfg_path="cfg/training/yolov7.yaml"):
+    def train_yolov7(self, proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml",
+                     img_size=640, batch_size=42, num_workers=4, cfg_path="cfg/training/yolov7.yaml"):
         # The path can be an absolute path or relative path with the root to be ./MetaHand/tools/yolov7
         if not os.path.exists(data_path):
             if not os.path.exists(data_path.replace("/root", os.getcwd())):
@@ -76,12 +80,13 @@ class DNNTest(object):
             weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt",
             mutate_type="ObjectGaussianMutation",
             mutate_ratio="03",
+            mutate_strength=160,
             threshold=0.3
     ):
         model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
         log_dir = f"/root/MetaHand/logs/yolov7/{mutate_type}"
         output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
-        mutate_name = f"object_gaussian_160_fixMutRatio_centerXY_{mutate_ratio}"
+        mutate_name = f"object_gaussian_{mutate_strength}_fixMutRatio_centerXY_{mutate_ratio}"
         mutate_image = f"{data_dir}/{mutate_type}/{mutate_name}"
         origin_image = f"{data_dir}/images/train"
         origin_label = f"{data_dir}/labels/train"
@@ -113,15 +118,18 @@ class DNNTest(object):
             weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt",
             mutate_type="ObjectGaussianMutation",
             mutate_ratio="03",
+            mutate_strength=160,
             threshold=0.3,
             img_size=640,
     ):
-        violation_path = self.evaluate_yolov7(data_dir=data_dir, weights_path=weights_path, mutate_type=mutate_type, mutate_ratio=mutate_ratio)
-        mutate_name = f"object_gaussian_160_fixMutRatio_centerXY_{mutate_ratio}"
+        violation_path = self.evaluate_yolov7(data_dir=data_dir, weights_path=weights_path, mutate_type=mutate_type,
+                                              mutate_strength=mutate_strength, mutate_ratio=mutate_ratio)
+        mutate_name = f"object_gaussian_{mutate_strength}_fixMutRatio_centerXY_{mutate_ratio}"
         base_dir = f"/root/MetaHand/tools/yolov7/runs/train/{mutate_type}/{mutate_name}_{threshold}"
         v7_base = f"./runs/train/{mutate_type}/{mutate_name}_{threshold}"
         os.makedirs(base_dir.replace("/root/", ""), exist_ok=True)
-        shutil.move(violation_path.replace("/root/", ""), os.path.join(base_dir.replace("/root/", ""), f"{mutate_name}_violations.txt"))
+        shutil.move(violation_path.replace("/root/", ""),
+                    os.path.join(base_dir.replace("/root/", ""), f"{mutate_name}_violations.txt"))
 
         # new train file will be saved in ./{base_dir}/train.txt
         cmd = f"podman exec {self.container_name} /bin/sh -c " \
@@ -150,8 +158,8 @@ class DNNTest(object):
             file.write(new_yaml)
         self.train_yolov7(proj_name=f"yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
 
-
-    def mutate_image(self, image_path: str, label_path: str, output_path: str, mutate_type: str, mutate_ratio: str, noise_intensity: str, label_format: str) -> str:
+    def mutate_image(self, image_path: str, label_path: str, output_path: str, mutate_type: str, mutate_ratio: str,
+                     noise_intensity: str, label_format: str) -> str:
         """
         Generate mutated images on target {img_path}.
         If the {img_path} is a directory, this function will mutate all images inside the directory.
@@ -170,19 +178,17 @@ class DNNTest(object):
         cmd = ""
         if os.path.isfile(image_path):
             cmd = f"podman exec {self.container_name} /bin/bash -c \"python -O /root/scripts/mutation/mutation_operation_single.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
-            #Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation_single.py --image_path /root/data_pilot/images/0a0c5746-frame946.jpg --label_path /root/data_pilot/labels/0a0c5746-frame946.txt --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
+            # Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation_single.py --image_path /root/data_pilot/images/0a0c5746-frame946.jpg --label_path /root/data_pilot/labels/0a0c5746-frame946.txt --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
         if os.path.isdir(image_path):
             cmd = f"podman exec {self.container_name} /bin/bash -c \"python -O /root/scripts/mutation/mutation_operation.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
-            #Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation.py --image_path /root/data_pilot/images --label_path /root/data_pilot/labels --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
+            # Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation.py --image_path /root/data_pilot/images --label_path /root/data_pilot/labels --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
         subprocess.call(cmd, shell=True)
         return output_path
-
 
 
 # if os.path.isdir("data"):
 #     # directory exists
 #         cmd = f"podman exec {self.container_name} /bin/bash -c \"cd /root; ./run/mutate_gui.sh {image_path} {label_path} {output_path} {mutate_type} {mutate_ratio} {noise_intensity} {label_format}\"'"
-        
 
 
 if __name__ == "__main__":
@@ -193,5 +199,6 @@ if __name__ == "__main__":
     # dnnTest.train_yolov7(proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml")
     # dnnTest.evaluate_yolov7()
     # dnnTest.detect_yolov7_dir(weights_path="/root/MetaHand/tools/yolov7/runs/train/yolov7_object_gaussian_160_fixMutRatio_centerXY_03_640/weights/best.pt")
-    for mutate_ratio in ["01", "02", "04", "05", "06", "07", "08", "09"]:
-        dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt", img_size=640, mutate_ratio=mutate_ratio)
+    for mutate_ratio in ["01", "02", "03", "04", "05", "06", "07", "08", "09"]:
+        dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt",
+                              img_size=640, mutate_ratio=mutate_ratio, mutate_strength=320)
