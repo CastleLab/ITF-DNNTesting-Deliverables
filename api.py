@@ -143,6 +143,7 @@ class DNNTest(object):
               f"'"
         subprocess.call(cmd, shell=True)
         train_txt = f"{v7_base}/train.txt"
+        subprocess.call(f"rm ./MetaHand/tools/yolov7/{train_txt.replace('.txt','.cache')}", shell=True)
         src_yaml = os.path.join(data_dir, "data.yaml")
         dst_yaml = os.path.join(base_dir, "data.yaml")
         shutil.copy(src_yaml.replace("/root/", ""), dst_yaml.replace("/root/", ""))
@@ -200,5 +201,5 @@ if __name__ == "__main__":
     # dnnTest.evaluate_yolov7()
     # dnnTest.detect_yolov7_dir(weights_path="/root/MetaHand/tools/yolov7/runs/train/yolov7_object_gaussian_160_fixMutRatio_centerXY_03_640/weights/best.pt")
     for mutate_ratio in ["01", "02", "03", "04", "05", "06", "07", "08", "09"]:
-        dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_640/weights/best.pt",
-                              img_size=640, mutate_ratio=mutate_ratio, mutate_strength=320)
+        dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_320/weights/best.pt",
+                              img_size=320, mutate_ratio=mutate_ratio, mutate_strength=320)
