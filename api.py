@@ -159,7 +159,7 @@ class DNNTest(object):
             file.write(new_yaml)
         self.train_yolov7(proj_name=f"yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
 
-    def mutate_image(self, image_path: str, label_path: str, output_path: str, mutate_type: str, mutate_ratio: str,
+    def mutate_image(self, container_name: str, image_path: str, label_path: str, output_path: str, mutate_type: str, mutate_ratio: str,
                      noise_intensity: str, label_format: str) -> str:
         """
         Generate mutated images on target {img_path}.
@@ -178,13 +178,32 @@ class DNNTest(object):
         # python -O ./scripts/mutation/mutation_operation.py --image_path /ssddata1/users/dlproj/MetaHand/data_pilot/images/0a0c5746-frame946.jpg --label_path /ssddata1/users/dlproj/MetaHand/data_pilot/labels/0a0c5746-frame946.txt --mutate_path $3 --random_erase $5 --random_erase_mode fixMutRatio_centerXY --guassian_sigma $6 --object_or_background $4 --dataset $7
         cmd = ""
         if os.path.isfile(image_path):
-            cmd = f"podman exec {self.container_name} /bin/bash -c \"python -O /root/scripts/mutation/mutation_operation_single.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
-            # Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation_single.py --image_path /root/data_pilot/images/0a0c5746-frame946.jpg --label_path /root/data_pilot/labels/0a0c5746-frame946.txt --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
+            cmd = f"podman exec {container_name} /bin/bash -c \"source ~/.bashrc; conda activate metahand; python -O /root/scripts/mutation/mutation_operation_single.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
+            
+            print(f"cm1 {cmd}")
+            # Example: podman exec DNNTesting /bin/bash -c "source ~/.bashrc; conda activate metahand; python -O /root/MetaHand/scripts/mutation/mutation_operation_single.py --image_path /root/MetaHand/data_pilot_test/images/000fbcd9-frame144.jpg --label_path /root/MetaHand/data_pilot_test/labels/000fbcd9-frame144.txt --mutate_path /root/MetaHand/data_pilot_test/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
         if os.path.isdir(image_path):
-            cmd = f"podman exec {self.container_name} /bin/bash -c \"python -O /root/scripts/mutation/mutation_operation.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
-            # Example: podman exec MetaHand /bin/bash -c "python -O /root/scripts/mutation/mutation_operation.py --image_path /root/data_pilot/images --label_path /root/data_pilot/labels --mutate_path /root/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
+            cmd = f"podman exec {container_name} /bin/bash -c \"source ~/.bashrc; conda activate metahand; python -O /root/scripts/mutation/mutation_operation.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset ${label_format}\""
+            print(f"cm2 {cmd}")
+            # Example: podman exec DNNTesting /bin/bash -c "source ~/.bashrc; conda activate metahand; python -O /root/MetaHand/scripts/mutation/mutation_operation.py --image_path /root/MetaHand/data_pilot_test/images/ --label_path /root/MetaHand/data_pilot_test/labels/ --mutate_path /root/MetaHand/data_pilot_test/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
         subprocess.call(cmd, shell=True)
         return output_path
+    
+    def test_mutate_single_image(self):
+        if os.path.isfile("/root/MetaHand/data_pilot_test/test_mutate"):
+            shutil.rmtree("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate")
+        self.mutate_image("DNNTesting", "/root/MetaHand/data_pilot_test/images/000fbcd9-frame144.jpg", "/root/MetaHand/data_pilot_test/labels/000fbcd9-frame144.txt", "/root/MetaHand/data_pilot_test/test_mutate", "object", "0.9", "16.0", "darknet")
+        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/000fbcd9-frame144.jpg"), "Mutated file is not generated"
+
+    def test_mutate_multi_images(self):
+        if os.path.isfile("/root/MetaHand/data_pilot_test/test_mutate"):
+            shutil.rmtree("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate")
+        self.mutate_image("DNNTesting", "/root/MetaHand/data_pilot_test/images/", "/root/MetaHand/data_pilot_test/labels/", "/root/MetaHand/data_pilot_test/test_mutate", "object", "0.9","16.0", "darknet")
+        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/000fbcd9-frame144.jpg"), "Mutated file is not generated"
+        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0013ad86-frame8912.jpg"), "Mutated file is not generated"
+        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0016c94e-ae84057b-8.jpg"), "Mutated file is not generated"
+        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0018df51-IMG_20201019_155102.jpg"), "Mutated file is not generated"
+        
 
 
 # if os.path.isdir("data"):
@@ -205,6 +224,6 @@ if __name__ == "__main__":
     #                           img_size=320, mutate_ratio=mutate_ratio, mutate_strength=320)
     # TODO: Add runnable example usage for this api.
     # example usage for predicting on a single image
-    dnnTest.mutate_image()
+    dnnTest.test_mutate_single_image()
     # example usage for prediction on an image directory
-    dnnTest.mutate_image()
+    dnnTest.test_mutate_multi_images()
