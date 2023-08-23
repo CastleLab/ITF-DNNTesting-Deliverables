@@ -204,4 +204,7 @@ if __name__ == "__main__":
     #     dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_320/weights/best.pt",
     #                           img_size=320, mutate_ratio=mutate_ratio, mutate_strength=320)
     # TODO: Add runnable example usage for this api.
+    # example usage for predicting on a single image
+    dnnTest.mutate_image()
+    # example usage for prediction on an image directory
     dnnTest.mutate_image()
