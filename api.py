@@ -19,7 +19,7 @@ class DNNTest(object):
         assert img_path.endswith(".jpg")
         model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
         output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
-        cmd = f"podman exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
+        cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
               f"--img_dir {img_path} " \
               f"--weights_path {weights_path} " \
               f"--save_dir={output_dir} " \
@@ -143,7 +143,7 @@ class DNNTest(object):
               f"'"
         subprocess.call(cmd, shell=True)
         train_txt = f"{v7_base}/train.txt"
-        subprocess.call(f"rm ./MetaHand/tools/yolov7/{train_txt.replace('.txt','.cache')}", shell=True)
+        subprocess.call(f"rm ./MetaHand/tools/yolov7/{train_txt.replace('.txt', '.cache')}", shell=True)
         src_yaml = os.path.join(data_dir, "data.yaml")
         dst_yaml = os.path.join(base_dir, "data.yaml")
         shutil.copy(src_yaml.replace("/root/", ""), dst_yaml.replace("/root/", ""))
@@ -200,6 +200,8 @@ if __name__ == "__main__":
     # dnnTest.train_yolov7(proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml")
     # dnnTest.evaluate_yolov7()
     # dnnTest.detect_yolov7_dir(weights_path="/root/MetaHand/tools/yolov7/runs/train/yolov7_object_gaussian_160_fixMutRatio_centerXY_03_640/weights/best.pt")
-    for mutate_ratio in ["01", "02", "03", "04", "05", "06", "07", "08", "09"]:
-        dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_320/weights/best.pt",
-                              img_size=320, mutate_ratio=mutate_ratio, mutate_strength=320)
+    # for mutate_ratio in ["01", "02", "03", "04", "05", "06", "07", "08", "09"]:
+    #     dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_320/weights/best.pt",
+    #                           img_size=320, mutate_ratio=mutate_ratio, mutate_strength=320)
+    # TODO: Add runnable example usage for this api.
+    dnnTest.mutate_image()
