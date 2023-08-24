@@ -33,7 +33,8 @@ def check_docker_exists() -> bool:
     try:
         subprocess.run(["docker", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
-    except subprocess.CalledProcessError:
+    except FileNotFoundError:
         return False
+
 
 check_docker_exists()
