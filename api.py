@@ -235,6 +235,7 @@ class DNNTest(object):
             "./MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0018df51-IMG_20201019_155102.jpg"), "Mutated file is not generated"
 
     def test_mutate_multi_images_background(self):
+        print("This test case will take longer time for processing, please wait for 1-2 minutes")
         if os.path.isfile("/root/MetaHand/data_pilot_test/test_mutate"):
             shutil.rmtree("./MetaHand/data_pilot_test/test_mutate")
         self.mutate_image("directory", "/root/MetaHand/data_pilot_test/images/",
@@ -260,8 +261,8 @@ if __name__ == "__main__":
     # for mutate_ratio in ["01", "02", "03", "04", "05", "06", "07", "08", "09"]:
     #     dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_320/weights/best.pt",
     #                           img_size=320, mutate_ratio=mutate_ratio, mutate_strength=320)
-    #dnnTest.test_mutate_single_image_object()
-    #dnnTest.test_mutate_single_image_background()
-    #dnnTest.test_mutate_multi_images_object()
+    dnnTest.test_mutate_single_image_object()
+    dnnTest.test_mutate_single_image_background()
+    dnnTest.test_mutate_multi_images_object()
     dnnTest.test_mutate_multi_images_background()
 
