@@ -117,10 +117,9 @@ class ImageMutationPage(tk.Frame):
         shutil.copy(image_path, tmp_img_path)
         shutil.copy(label_path, tmp_label_path)
 
-        res = dnnTest.mutate_image(file_or_directory="file", image_path=os.path.join("/root/", tmp_img_path),
+        output_dir = dnnTest.mutate_image(file_or_directory="file", image_path=os.path.join("/root/", tmp_img_path),
                                    label_path=os.path.join("/root/", tmp_label_path), mutate_type=mt)
-        res = os.path.join("./MetaHand/data_pilot_test/test_mutate",
-                           f"ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/label.jpg")
+        res = os.path.join(output_dir, "label.jpg")
         self.show_mutation_result(img_path=res)
 
     @staticmethod

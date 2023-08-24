@@ -199,6 +199,10 @@ class DNNTest(object):
         else:
             raise ValueError("please specify file or directory")
         subprocess.call(cmd, shell=True)
+        if mutate_type == "object":
+            output_path = os.path.join(output_path, f"ObjectGaussianMutation/object_gaussian_{noise_intensity.replace('.', '')}_fixMutRatio_centerXY_{mutate_ratio.replace('.', '')}")
+        elif mutate_type == "background":
+            output_path = os.path.join(output_path, f"BackgroundGaussianMutation/background_gaussian_{noise_intensity.replace('.', '_')}")
         return output_path
 
     def test_mutate_single_image_object(self):
