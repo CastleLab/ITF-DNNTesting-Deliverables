@@ -2,6 +2,7 @@ import os
 import shutil
 import tkinter as tk
 from tkinter import filedialog
+from util import update_readonly_textbox
 
 from PIL import Image, ImageTk
 
@@ -37,12 +38,7 @@ class ImageMutationPage(tk.Frame):
             if event.widget == self.label_path_entry:
                 event.widget.insert(tk.END, "Please enter the path of training labels")
 
-    # Implementation of Image Mutation Section
-    def image_mutation_page(self):
-        # Creating a new Tkinter window
-        self.image_mutation_window = tk.Toplevel(self.master)
-        self.image_mutation_window.title("Image Mutation")
-
+    def draw_select_image_frame(self):
         # Create the left section for image selection
         image_frame = tk.Frame(self.image_mutation_window)
         image_frame.pack(side=tk.LEFT)
@@ -54,6 +50,11 @@ class ImageMutationPage(tk.Frame):
                 self._display_image(self.image_label, filepath)
                 self._hide_image(self.mutation_result_image)
 
+        def browse_label():
+            filepath = filedialog.askopenfilename()
+            if filepath:
+                self._display_label(self.label_box, filepath)
+
         select_button = tk.Button(image_frame, text="Select Image", command=browse_image)
         select_button.pack()
 
@@ -61,12 +62,18 @@ class ImageMutationPage(tk.Frame):
         self.image_label = tk.Label(image_frame, width=50, height=20, borderwidth=2, relief="groove")
         self.image_label.pack()
 
-        label_selection_frame = tk.Frame(image_frame)
-        label_selection_frame.pack(side=tk.TOP)
-        self.label_path_entry: tk.Entry = self.entry_module(frame=label_selection_frame,
-                                                            default_entry_text="Please enter the path of training labels",
-                                                            des="Label path")
+        label_button = tk.Button(image_frame, text="Select Label", command=browse_label)
+        label_button.pack()
+        self.label_box = tk.Text(image_frame, height=5, width=50)
+        self.label_box.pack()
+        # label_selection_frame = tk.frame(image_frame)
+        # label_selection_frame.pack(side=tk.top)
+        # self.label_path_entry: tk.Entry = self.entry_module(frame=label_selection_frame,
+        #                                                     default_entry_text="Please enter the path of training labels",
+        #                                                     des="Label path")
 
+
+    def draw_mutate_frame(self):
         # Create the right section for model detection
         model_frame = tk.Frame(self.image_mutation_window)
         model_frame.pack(side=tk.RIGHT)
@@ -91,9 +98,17 @@ class ImageMutationPage(tk.Frame):
         self.mutation_result_image = tk.Label(model_frame, width=50, height=20, relief="groove", borderwidth=2)
         self.mutation_result_image.pack(side=tk.BOTTOM)
 
-    def mutate(self, dest_dir="./MetaHand/tools/yolov7/runs/train"):
+    # Implementation of Image Mutation Section
+    def image_mutation_page(self):
+        # Creating a new Tkinter window
+        self.image_mutation_window = tk.Toplevel(self.master)
+        self.image_mutation_window.title("Image Mutation")
+        self.draw_select_image_frame()
+        self.draw_mutate_frame()
+
+    def mutate(self):
         image_path = self.image_label.text
-        label_path = self.label_path_entry.get()
+        label_path = self.label_box.text
         mt = self.mutation_var.get()
 
         tmp_img_path = "./tmp/temp.jpg"
@@ -123,6 +138,15 @@ class ImageMutationPage(tk.Frame):
     def _hide_image(image_label: tk.Label):
         if hasattr(image_label, "image"):
             del image_label.image
+
+    @staticmethod
+    def _display_label(label: tk.Text, filepath: str):
+        # Display the selected label
+        with open(filepath, "r") as file:
+            label_str = file.read()
+        label.text = filepath
+        update_readonly_textbox(label, label_str)
+
 
     def show_mutation_result(self, img_path):
         self._display_image(self.mutation_result_image, img_path)
