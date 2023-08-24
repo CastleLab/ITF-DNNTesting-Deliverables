@@ -2,16 +2,18 @@
 import os
 import shutil
 import subprocess
+from util import check_docker_exists
 
 
 class DNNTest(object):
     def __init__(self, container_name="DNNTesting"):
         self.container_name = container_name
+        self.crunner = "docker" if check_docker_exists() else "podman"
 
     def numerical_analysis(self, model_name):
         if not model_name.endswith(".pbtxt"):
             raise ValueError(f"Invalid model: {model_name}. The model format should be pbtxt")
-        cmd = f"docker exec {self.container_name} /bin/sh -c 'cd DEBAR && CONDA_PREFIX=/opt/conda/envs/debar PATH=/opt/conda/envs/debar/bin:$PATH /opt/conda/envs/debar/bin/python analysis_main.py ./computation_graphs_and_TP_list/computation_graphs/{model_name}'"
+        cmd = f"{self.crunner} exec {self.container_name} /bin/sh -c 'cd DEBAR && CONDA_PREFIX=/opt/conda/envs/debar PATH=/opt/conda/envs/debar/bin:$PATH /opt/conda/envs/debar/bin/python analysis_main.py ./computation_graphs_and_TP_list/computation_graphs/{model_name}'"
         result = subprocess.check_output(cmd, shell=True)
         return result
 
@@ -19,7 +21,7 @@ class DNNTest(object):
         assert img_path.endswith(".jpg")
         model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
         output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
-        cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
+        cmd = f"{self.crunner} exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
               f"--img_dir {img_path} " \
               f"--weights_path {weights_path} " \
               f"--save_dir={output_dir} " \
@@ -36,7 +38,7 @@ class DNNTest(object):
                           size=640, confidence=0.25):
         model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
         output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
-        cmd = f"podman exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
+        cmd = f"{self.crunner} exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.evaluation.detect_parallel_yolov7 " \
               f"--img_dir {img_path} " \
               f"--weights_path {weights_path} " \
               f"--save_dir={output_dir} " \
@@ -53,7 +55,7 @@ class DNNTest(object):
             image_path = os.path.join("/root", image_path)
         if not label_path.startswith("/root"):
             label_path = os.path.join("/root", label_path)
-        cmd = f"docker exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.dataset.yolov7_dataset_preparation " \
+        cmd = f"{self.crunner} exec {self.container_name}  /bin/sh -c 'cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH /opt/conda/envs/metahand/bin/python -m scripts.dataset.yolov7_dataset_preparation " \
               f"--src_img_dir {image_path} " \
               f"--src_label_dir {label_path} " \
               f"--target_dir ./tools/yolov7/{dataset_name}'"
@@ -68,7 +70,7 @@ class DNNTest(object):
         if not os.path.exists(data_path):
             if not os.path.exists(data_path.replace("/root", os.getcwd())):
                 raise ValueError(f"The data path: {data_path} does not exist!")
-        cmd = f'podman exec {self.container_name}  /bin/sh -c \'cd MetaHand/tools/yolov7 && /opt/conda/envs/metahand/bin/python -m torch.distributed.launch ' \
+        cmd = f'{self.crunner} exec {self.container_name}  /bin/sh -c \'cd MetaHand/tools/yolov7 && /opt/conda/envs/metahand/bin/python -m torch.distributed.launch ' \
               f'--nproc_per_node 3 --master_port 9527 train.py --workers {num_workers} --device 1,0,2 ' \
               f'--sync-bn --batch-size {batch_size} --data {data_path} ' \
               f'--img {img_size} --cfg {cfg_path} --weights "" ' \
@@ -93,7 +95,7 @@ class DNNTest(object):
         MR = 2
         os.makedirs(log_dir.replace("/root/", ""), exist_ok=True)
         os.makedirs(output_dir.replace("/root/", ""), exist_ok=True)
-        cmd = f"podman exec {self.container_name} /bin/sh -c " \
+        cmd = f"{self.crunner} exec {self.container_name} /bin/sh -c " \
               f"'" \
               f"cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH " \
               f"/opt/conda/envs/metahand/bin/python -u -m scripts.evaluation.evaluate " \
@@ -132,7 +134,7 @@ class DNNTest(object):
                     os.path.join(base_dir.replace("/root/", ""), f"{mutate_name}_violations.txt"))
 
         # new train file will be saved in ./{base_dir}/train.txt
-        cmd = f"podman exec {self.container_name} /bin/sh -c " \
+        cmd = f"{self.crunner} exec {self.container_name} /bin/sh -c " \
               f"'" \
               f"cd MetaHand && CONDA_PREFIX=/opt/conda/envs/metahand PATH=/opt/conda/envs/metahand/bin:$PATH " \
               f"/opt/conda/envs/metahand/bin/python -u -m scripts.train.prepare_train_data " \
@@ -159,13 +161,15 @@ class DNNTest(object):
             file.write(new_yaml)
         self.train_yolov7(proj_name=f"yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
 
-    def mutate_image(self, file_or_directory: str, container_name: str, image_path: str, label_path: str, output_path: str, mutate_type: str, mutate_ratio: str,
-                     noise_intensity: str, label_format: str) -> str:
+    def mutate_image(self, file_or_directory: str, image_path: str, label_path: str,
+                     output_path: str = "./MetaHand/data_pilot_test/test_mutate", mutate_type: str = "object", mutate_ratio: str = "0.9",
+                     noise_intensity: str = "16.0", label_format: str = "darknet") -> str:
         """
         Generate mutated images on target {img_path}.
         If the {img_path} is a directory, this function will mutate all images inside the directory.
         If the {img_path} is a file, this function will mutate the target image.
-        :param img_path
+        :param file_or_directory: "file" or "directory"
+        :param image_path
         :param label_path
         :param output_path: directory that stores mutated images
         :param mutate_type: "background" or "object"
@@ -176,39 +180,50 @@ class DNNTest(object):
         """
         # python -O ./scripts/mutation/mutation_operation.py --image_path $1 --label_path $2 --mutate_path $3 --random_erase $5 --random_erase_mode fixMutRatio_centerXY --guassian_sigma $6 --object_or_background $4 --dataset $7
         # python -O ./scripts/mutation/mutation_operation.py --image_path /ssddata1/users/dlproj/MetaHand/data_pilot/images/0a0c5746-frame946.jpg --label_path /ssddata1/users/dlproj/MetaHand/data_pilot/labels/0a0c5746-frame946.txt --mutate_path $3 --random_erase $5 --random_erase_mode fixMutRatio_centerXY --guassian_sigma $6 --object_or_background $4 --dataset $7
-        cmd = ""
+        # assert os.path.exists(image_path)
+        # assert os.path.exists(label_path)
         if file_or_directory == "file":
-            cmd = f"podman exec {container_name} /bin/bash -c \"source ~/.bashrc; conda activate metahand; python -O /root/MetaHand/scripts/mutation/mutation_operation_single.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset {label_format}\""
-            #print(f"cm1 {cmd}")
+            cmd = f"{self.crunner}  exec {self.container_name} /bin/bash -c \"source ~/.bashrc; conda activate metahand; \
+            python -O /root/MetaHand/scripts/mutation/mutation_operation_single.py --image_path {image_path} \
+            --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} \
+            --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} \
+            --object_or_background {mutate_type} --dataset {label_format}\""
             # Example: podman exec DNNTesting /bin/bash -c "source ~/.bashrc; conda activate metahand; python -O /root/MetaHand/scripts/mutation/mutation_operation_single.py --image_path /root/MetaHand/data_pilot_test/images/000fbcd9-frame144.jpg --label_path /root/MetaHand/data_pilot_test/labels/000fbcd9-frame144.txt --mutate_path /root/MetaHand/data_pilot_test/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
         elif file_or_directory == "directory":
-            cmd = f"podman exec {container_name} /bin/bash -c \"source ~/.bashrc; conda activate metahand; python -O /root/MetaHand/scripts/mutation/mutation_operation.py --image_path {image_path} --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} --object_or_background {mutate_type} --dataset {label_format}\""
+            cmd = f"{self.crunner} exec {self.container_name} /bin/bash -c \"source ~/.bashrc; conda activate metahand; \
+            python -O /root/MetaHand/scripts/mutation/mutation_operation.py --image_path {image_path} \
+            --label_path {label_path} --mutate_path {output_path} --random_erase {mutate_ratio} \
+            --random_erase_mode fixMutRatio_centerXY --guassian_sigma {noise_intensity} \
+            --object_or_background {mutate_type} --dataset {label_format}\""
             # Example: podman exec DNNTesting /bin/bash -c "source ~/.bashrc; conda activate metahand; python -O /root/MetaHand/scripts/mutation/mutation_operation.py --image_path /root/MetaHand/data_pilot_test/images/ --label_path /root/MetaHand/data_pilot_test/labels/ --mutate_path /root/MetaHand/data_pilot_test/test_mutate --random_erase 0.9 --random_erase_mode fixMutRatio_centerXY --guassian_sigma 16.0 --object_or_background object --dataset darknet"
         else:
             raise ValueError("please specify file or directory")
         subprocess.call(cmd, shell=True)
         return output_path
-    
+
     def test_mutate_single_image(self):
         if os.path.isfile("/root/MetaHand/data_pilot_test/test_mutate"):
-            shutil.rmtree("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate")
-        self.mutate_image("file","DNNTesting", "/root/MetaHand/data_pilot_test/images/000fbcd9-frame144.jpg", "/root/MetaHand/data_pilot_test/labels/000fbcd9-frame144.txt", "/root/MetaHand/data_pilot_test/test_mutate", "object", "0.9", "16.0", "darknet")
-        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/000fbcd9-frame144.jpg"), "Mutated file is not generated"
+            shutil.rmtree("./MetaHand/data_pilot_test/test_mutate")
+        self.mutate_image("file", "/root/MetaHand/data_pilot_test/images/000fbcd9-frame144.jpg",
+                          "/root/MetaHand/data_pilot_test/labels/000fbcd9-frame144.txt",
+                          "/root/MetaHand/data_pilot_test/test_mutate", "object", "0.9", "16.0", "darknet")
+        assert os.path.isfile(
+            "./MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/000fbcd9-frame144.jpg"), "Mutated file is not generated"
 
     def test_mutate_multi_images(self):
         if os.path.isfile("/root/MetaHand/data_pilot_test/test_mutate"):
-            shutil.rmtree("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate")
-        self.mutate_image("directory","DNNTesting", "/root/MetaHand/data_pilot_test/images/", "/root/MetaHand/data_pilot_test/labels/", "/root/MetaHand/data_pilot_test/test_mutate", "object", "0.9","16.0", "darknet")
-        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/000fbcd9-frame144.jpg"), "Mutated file is not generated"
-        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0013ad86-frame8912.jpg"), "Mutated file is not generated"
-        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0016c94e-ae84057b-8.jpg"), "Mutated file is not generated"
-        assert os.path.isfile("/ssddata1/users/dlproj/ITF-Deliverables/MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0018df51-IMG_20201019_155102.jpg"), "Mutated file is not generated"
-        
-
-
-# if os.path.isdir("data"):
-#     # directory exists
-#         cmd = f"podman exec {self.container_name} /bin/bash -c \"cd /root; ./run/mutate_gui.sh {image_path} {label_path} {output_path} {mutate_type} {mutate_ratio} {noise_intensity} {label_format}\"'"
+            shutil.rmtree("./MetaHand/data_pilot_test/test_mutate")
+        self.mutate_image("directory", "/root/MetaHand/data_pilot_test/images/",
+                          "/root/MetaHand/data_pilot_test/labels/", "/root/MetaHand/data_pilot_test/test_mutate",
+                          "object", "0.9", "16.0", "darknet")
+        assert os.path.isfile(
+            "./MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/000fbcd9-frame144.jpg"), "Mutated file is not generated"
+        assert os.path.isfile(
+            "./MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0013ad86-frame8912.jpg"), "Mutated file is not generated"
+        assert os.path.isfile(
+            "./MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0016c94e-ae84057b-8.jpg"), "Mutated file is not generated"
+        assert os.path.isfile(
+            "./MetaHand/data_pilot_test/test_mutate/ObjectGaussianMutation/object_gaussian_160_fixMutRatio_centerXY_09/0018df51-IMG_20201019_155102.jpg"), "Mutated file is not generated"
 
 
 if __name__ == "__main__":
@@ -222,8 +237,5 @@ if __name__ == "__main__":
     # for mutate_ratio in ["01", "02", "03", "04", "05", "06", "07", "08", "09"]:
     #     dnnTest.repair_yolov7(weights_path="/root/MetaHand/tools/yolov7/runs/train/pilotstudy_320/weights/best.pt",
     #                           img_size=320, mutate_ratio=mutate_ratio, mutate_strength=320)
-    # TODO: Add runnable example usage for this api.
-    # example usage for predicting on a single image
     dnnTest.test_mutate_single_image()
-    # example usage for prediction on an image directory
     dnnTest.test_mutate_multi_images()

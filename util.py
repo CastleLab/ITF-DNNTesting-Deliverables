@@ -1,5 +1,6 @@
 import tkinter as tk
 import threading
+import subprocess
 
 
 def update_readonly_textbox(textbox: tk.Text, content: str) -> None:
@@ -26,3 +27,13 @@ class ThreadWithResult(threading.Thread):
 
     def run(self):
         self.result = self.target(*self.args)
+
+
+def check_docker_exists() -> bool:
+    try:
+        subprocess.run(["docker", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+check_docker_exists()
