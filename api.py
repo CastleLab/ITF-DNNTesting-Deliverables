@@ -127,8 +127,9 @@ class DNNTest(object):
         violation_path = self.evaluate_yolov7(data_dir=data_dir, weights_path=weights_path, mutate_type=mutate_type,
                                               mutate_strength=mutate_strength, mutate_ratio=mutate_ratio)
         mutate_name = f"object_gaussian_{mutate_strength}_fixMutRatio_centerXY_{mutate_ratio}"
-        base_dir = f"/root/MetaHand/tools/yolov7/runs/train/{mutate_type}/{mutate_name}_{threshold}"
-        v7_base = f"./runs/train/{mutate_type}/{mutate_name}_{threshold}"
+        data_name = data_dir.rstrip("/").split("/")[-1]
+        base_dir = f"/root/MetaHand/tools/yolov7/runs/train/{data_name}/{mutate_type}/{mutate_name}_{threshold}"
+        v7_base = f"./runs/train/{data_name}/{mutate_type}/{mutate_name}_{threshold}"
         os.makedirs(base_dir.replace("/root/", ""), exist_ok=True)
         shutil.move(violation_path.replace("/root/", ""),
                     os.path.join(base_dir.replace("/root/", ""), f"{mutate_name}_violations.txt"))
@@ -159,7 +160,7 @@ class DNNTest(object):
                 new_yaml += line + "\n"
         with open(dst_yaml.replace("/root/", ""), "w") as file:
             file.write(new_yaml)
-        self.train_yolov7(proj_name=f"yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
+        self.train_yolov7(proj_name=f"{data_name}_yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
 
     def mutate_image(self, file_or_directory: str, image_path: str, label_path: str,
                      output_path: str = "./MetaHand/data_pilot_test/test_mutate", mutate_type: str = "object", mutate_ratio: str = "0.9",
