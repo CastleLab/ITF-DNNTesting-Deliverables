@@ -46,17 +46,31 @@ class ModelTrainingPage(tk.Frame):
         # Creating the "Selecting Dataset" section
         model_train_frame = tk.Frame(self.model_train_window)
         model_train_frame.pack(side=tk.LEFT)
+        model_train_option_frame = tk.Frame(model_train_frame)
+        model_train_option_frame.pack(side=tk.TOP)
 
+        data_label = tk.Label(model_train_option_frame, text="Select Dataset:")
+        data_label.pack(side=tk.LEFT)
         self.train_data_var = tk.StringVar()
         cfg_list = self._load_data()
         self.train_data_var.set(cfg_list[0])  # default value
         self.train_data_var.trace('w', self.show_data_cfg)
+        self.data_menu = tk.OptionMenu(model_train_option_frame, self.train_data_var, *cfg_list)
+        self.data_menu.pack(side=tk.LEFT)
 
-        self.data_menu = tk.OptionMenu(model_train_frame, self.train_data_var, *cfg_list)
-        self.data_menu.pack()
+        model_label = tk.Label(model_train_option_frame, text="Select Model:")
+        model_label.pack(side=tk.LEFT)
+        model_list = ["yolov7-tiny", "yolov7"]
+        self.train_model_var = tk.StringVar()
+        self.train_model_var.set("yolov7")
+        self.model_menu = tk.OptionMenu(model_train_option_frame, self.train_model_var, *model_list)
+        self.model_menu.pack(side=tk.LEFT)
 
         self.cfg_text = tk.Text(model_train_frame, height=5, width=50)
         self.cfg_text.pack()
+        self.train_button = tk.Button(model_train_frame, text="Start Training",
+                                        command=self.train_model)
+        self.train_button.pack()
         # show_data_cfg()
 
     def show_data_cfg(self, *args):
@@ -105,6 +119,13 @@ class ModelTrainingPage(tk.Frame):
                 event.widget.insert(tk.END, "Please enter the name of your dataset")
             elif event.widget == self.label_path_entry:
                 event.widget.insert(tk.END, "Please enter the path of training labels")
+
+    def train_model(self):
+        data_name = self.train_data_var.get()
+        model_name = self.train_model_var.get()
+        model_yaml_path = f"cfg/training/{model_name}.yaml"
+        data_yaml_path = os.path.join("/root/MetaHand/tools/yolov7/data/", f"{data_name}.yaml")
+        dnnTest.train_yolov7(proj_name=data_name, data_path=data_yaml_path, cfg_path=model_yaml_path)
 
     def prepare_dataset(self):
         image_path = self.image_path_entry.get()

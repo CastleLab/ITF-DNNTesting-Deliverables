@@ -1,3 +1,3 @@
 pyyaml
-python-tk
-pip install pillow
+pillow
+torch
