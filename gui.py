@@ -26,20 +26,16 @@ class AutoTestUnreliableInferenceGUI:
         button_frame = tk.Frame(self.master)
         button_frame.pack()
         # Creating the buttons on the main page
-        self.network_analysis_button = tk.Button(button_frame, text="Network Analysis",
-                                                 command=self.show_network_analysis_page)
-        self.network_analysis_button.pack()
-
-        self.image_mutation_button = tk.Button(button_frame, text="Image Mutation",
-                                               command=self.show_image_mutation_page)
-        self.image_mutation_button.pack()
+        self.model_train_button = tk.Button(button_frame, text="Model Training", command=self.show_model_training_page)
+        self.model_train_button.pack()
 
         self.image_detection_button = tk.Button(button_frame, text="Image Detection",
                                                 command=self.show_image_detection_page)
         self.image_detection_button.pack()
 
-        self.model_train_button = tk.Button(button_frame, text="Model Training", command=self.show_model_training_page)
-        self.model_train_button.pack()
+        self.image_mutation_button = tk.Button(button_frame, text="Image Mutation",
+                                               command=self.show_image_mutation_page)
+        self.image_mutation_button.pack()
 
         self.model_evaluation_button = tk.Button(button_frame, text="Model Evaluation",
                                                  command=self.show_model_evaluation_page)
@@ -48,6 +44,11 @@ class AutoTestUnreliableInferenceGUI:
         self.model_repair_button = tk.Button(button_frame, text="Model Repairing",
                                              command=self.show_model_repairing_page)
         self.model_repair_button.pack()
+
+        self.network_analysis_button = tk.Button(button_frame, text="Network Analysis",
+                                                 command=self.show_network_analysis_page)
+        self.network_analysis_button.pack()
+
 
         # Add more buttons here for your other pages...
 
@@ -77,8 +78,9 @@ class AutoTestUnreliableInferenceGUI:
 
 def run_gui():
     root = tk.Tk()
+    gui = AutoTestUnreliableInferenceGUI(root)
     # AutoTestUnreliableInferenceGUI(root).show_model_training_page()
-    AutoTestUnreliableInferenceGUI(root).show_model_evaluation_page()
+    # AutoTestUnreliableInferenceGUI(root).show_model_evaluation_page()
     # AutoTestUnreliableInferenceGUI(root).show_image_mutation_page()
     root.mainloop()
 

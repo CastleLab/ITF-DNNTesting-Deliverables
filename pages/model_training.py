@@ -2,7 +2,6 @@ import os
 import shutil
 import tkinter as tk
 from tkinter import filedialog
-import shutil
 
 import yaml
 
@@ -28,12 +27,12 @@ class ModelTrainingPage(tk.Frame):
         dataset_preparation_frame.pack(side=tk.LEFT)
 
         def browse_image_path():
-            folder_path = filedialog.askdirectory()
+            folder_path = filedialog.askdirectory(initialdir="./")
             self.image_folder_path = folder_path
             update_readonly_textbox(self.image_path_box, folder_path)
 
         def browse_label_path():
-            folder_path = filedialog.askdirectory()
+            folder_path = filedialog.askdirectory(initialdir="./")
             self.label_folder_path = folder_path
             update_readonly_textbox(self.label_path_box, folder_path)
 
@@ -86,6 +85,12 @@ class ModelTrainingPage(tk.Frame):
         self.train_model_var.set("yolov7")
         self.model_menu = tk.OptionMenu(model_train_option_frame, self.train_model_var, *model_list)
         self.model_menu.pack(side=tk.LEFT)
+
+        model_epoch_frame = tk.Frame(model_train_option_frame)
+        model_epoch_frame.pack(side=tk.LEFT)
+        self.epoch_entry: tk.Entry = self.entry_module(frame=model_epoch_frame,
+                                                       default_entry_text="Enter the Number of Epoch",
+                                                       des="Epoch: ")
 
         self.cfg_text = tk.Text(model_train_frame, height=5, width=50)
         self.cfg_text.pack()
@@ -140,13 +145,16 @@ class ModelTrainingPage(tk.Frame):
                 event.widget.insert(tk.END, "Please enter the name of your dataset")
             elif event.widget == self.label_path_entry:
                 event.widget.insert(tk.END, "Please enter the path of training labels")
+            elif event.widget == self.epoch_entry:
+                event.widget.insert(tk.END, "Enter the Number of Epoch")
 
     def train_model(self):
         data_name = self.train_data_var.get()
         model_name = self.train_model_var.get()
         model_yaml_path = f"cfg/training/{model_name}.yaml"
         data_yaml_path = os.path.join("/root/MetaHand/tools/yolov7/data/", f"{data_name}.yaml")
-        dnnTest.train_yolov7(proj_name=data_name, data_path=data_yaml_path, cfg_path=model_yaml_path)
+        dnnTest.train_yolov7(proj_name=data_name, data_path=data_yaml_path, cfg_path=model_yaml_path,
+                             num_epoch=int(self.epoch_entry.get()))
         print(f"Model training is finished. The best weights is saved in \
         ./MetaHand/tools/yolov7/runs/train/{data_name}/weights/best.pt")
 

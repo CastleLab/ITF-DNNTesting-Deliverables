@@ -52,7 +52,7 @@ class ModelEvaluationPage(tk.Frame):
         self.mutate_menu.pack(side=tk.LEFT)
 
         def browse_label_path():
-            filepath = filedialog.askopenfilename()
+            filepath = filedialog.askopenfilename(initialdir="./")
             self.model_path = filepath
             update_readonly_textbox(self.model_path_box, filepath)
 

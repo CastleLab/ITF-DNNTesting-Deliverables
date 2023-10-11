@@ -65,7 +65,7 @@ class DNNTest(object):
         return res_path
 
     def train_yolov7(self, proj_name="pilotstudy", data_path="/root/MetaHand/tools/yolov7/pilotstudy/data.yaml",
-                     img_size=640, batch_size=42, num_workers=4, cfg_path="cfg/training/yolov7.yaml"):
+                     img_size=640, batch_size=42, num_workers=4, num_epoch=300, cfg_path="cfg/training/yolov7.yaml"):
         # The path can be an absolute path or relative path with the root to be ./MetaHand/tools/yolov7
         if not os.path.exists(data_path):
             if not os.path.exists(data_path.replace("/root", os.getcwd())):
@@ -76,13 +76,13 @@ class DNNTest(object):
                   f'--nproc_per_node 3 --master_port 9527 train.py --workers {num_workers} --device 1,0,2 ' \
                   f'--sync-bn --batch-size {batch_size} --data {data_path} ' \
                   f'--img {img_size} --cfg {cfg_path} --weights "" ' \
-                  f'--name {proj_name} --hyp data/hyp.scratch.p5.yaml\''
+                  f'--name {proj_name} --epochs {num_epoch} --hyp data/hyp.scratch.p5.yaml\''
         else:
             cmd = f'{self.crunner} exec {self.container_name}  /bin/sh -c \'cd MetaHand/tools/yolov7 && /opt/conda/envs/metahand/bin/python ' \
                   f'train.py --workers 1 --device cpu ' \
-                  f'--batch-size 12 --data {data_path} ' \
+                  f'--batch-size 2 --data {data_path} ' \
                   f'--img 320 --cfg {cfg_path} --weights "" ' \
-                  f'--name {proj_name} --epochs 10 --hyp data/hyp.scratch.p5.cpu.yaml\''
+                  f'--name {proj_name} --epochs {num_epoch} --hyp data/hyp.scratch.p5.cpu.yaml\''
         subprocess.call(cmd, shell=True)
 
     def evaluate_yolov7(
@@ -91,8 +91,10 @@ class DNNTest(object):
             mutate_type="ObjectGaussianMutation",
             mutate_ratio="03",
             mutate_strength=160,
-            threshold=0.3
+            threshold=0.3,
+            jobs=8
     ):
+        print(f"The weight path is: {weights_path}")
         model_name: str = weights_path.split("runs/train/")[-1].split("/")[0]
         log_dir = f"/root/MetaHand/logs/yolov7/{mutate_type}"
         output_dir = f"/root/MetaHand/tools/yolov7/runs/detect/{model_name}"
@@ -115,8 +117,8 @@ class DNNTest(object):
               f"-od={output_dir} " \
               f"--dataset=yolov7 " \
               f"--mr={MR} " \
-              f"--jobs=8 " \
-              f"--threshold={threshold} > {log_dir}/{mutate_name}_{threshold}.log" \
+              f"--jobs={jobs} " \
+              f"--threshold={threshold}" \
               f"'"
         subprocess.call(cmd, shell=True)
         violation_path = f"/root/MetaHand/{mutate_name}_violations.txt"
@@ -131,6 +133,7 @@ class DNNTest(object):
             mutate_strength=160,
             threshold=0.3,
             img_size=640,
+            num_epoch=300
     ):
         violation_path = self.evaluate_yolov7(data_dir=data_dir, weights_path=weights_path, mutate_type=mutate_type,
                                               mutate_strength=mutate_strength, mutate_ratio=mutate_ratio)
@@ -168,7 +171,7 @@ class DNNTest(object):
                 new_yaml += line + "\n"
         with open(dst_yaml.replace("/root/", ""), "w") as file:
             file.write(new_yaml)
-        self.train_yolov7(proj_name=f"{data_name}_yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size)
+        self.train_yolov7(proj_name=f"{data_name}_yolov7_{mutate_name}_{img_size}", data_path=dst_yaml, img_size=img_size, num_epoch=num_epoch)
 
     def mutate_image(self, file_or_directory: str, image_path: str, label_path: str,
                      output_path: str = "./MetaHand/data_pilot_test/test_mutate", mutate_type: str = "object", mutate_ratio: str = "0.9",
