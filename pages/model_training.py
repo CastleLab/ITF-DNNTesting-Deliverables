@@ -1,8 +1,13 @@
 import os
+import shutil
 import tkinter as tk
+from tkinter import filedialog
+import shutil
+
 import yaml
-from util import string_is_float, update_readonly_textbox
+
 from api import DNNTest
+from util import update_readonly_textbox
 
 dnnTest = DNNTest("DNNTesting")
 
@@ -15,22 +20,38 @@ class ModelTrainingPage(tk.Frame):
         self.master = master
         self.model_train_window = None
         self.model_train_page()
+        self.image_folder_path = ""
+        self.label_folder_path = ""
 
     def _create_dataset_preparation_frame(self, ):
         dataset_preparation_frame = tk.Frame(self.model_train_window)
         dataset_preparation_frame.pack(side=tk.LEFT)
 
+        def browse_image_path():
+            folder_path = filedialog.askdirectory()
+            self.image_folder_path = folder_path
+            update_readonly_textbox(self.image_path_box, folder_path)
+
+        def browse_label_path():
+            folder_path = filedialog.askdirectory()
+            self.label_folder_path = folder_path
+            update_readonly_textbox(self.label_path_box, folder_path)
+
         image_selection_frame = tk.Frame(dataset_preparation_frame)
         image_selection_frame.pack(side=tk.TOP)
-        self.image_path_entry: tk.Entry = self.entry_module(frame=image_selection_frame,
-                                                            default_entry_text="Please enter the path of training images",
-                                                            des="Image path")
+        self.image_path_button = tk.Button(image_selection_frame, text="Select Images",
+                                           command=browse_image_path)
+        self.image_path_button.pack(side=tk.LEFT)
+        self.image_path_box = tk.Text(image_selection_frame, height=1, width=50)
+        self.image_path_box.pack(side=tk.RIGHT)
 
         label_selection_frame = tk.Frame(dataset_preparation_frame)
         label_selection_frame.pack(side=tk.TOP)
-        self.label_path_entry: tk.Entry = self.entry_module(frame=label_selection_frame,
-                                                            default_entry_text="Please enter the path of training labels",
-                                                            des="Label path")
+        self.label_path_button = tk.Button(label_selection_frame, text="Select Labels",
+                                           command=browse_label_path)
+        self.label_path_button.pack(side=tk.LEFT)
+        self.label_path_box = tk.Text(label_selection_frame, height=1, width=50)
+        self.label_path_box.pack(side=tk.RIGHT)
 
         dataset_name_frame = tk.Frame(dataset_preparation_frame)
         dataset_name_frame.pack(side=tk.TOP)
@@ -69,7 +90,7 @@ class ModelTrainingPage(tk.Frame):
         self.cfg_text = tk.Text(model_train_frame, height=5, width=50)
         self.cfg_text.pack()
         self.train_button = tk.Button(model_train_frame, text="Start Training",
-                                        command=self.train_model)
+                                      command=self.train_model)
         self.train_button.pack()
         # show_data_cfg()
 
@@ -128,11 +149,17 @@ class ModelTrainingPage(tk.Frame):
         dnnTest.train_yolov7(proj_name=data_name, data_path=data_yaml_path, cfg_path=model_yaml_path)
 
     def prepare_dataset(self):
-        image_path = self.image_path_entry.get()
-        label_path = self.label_path_entry.get()
+        image_path = "./runtime/images"
+        label_path = "./runtime/labels"
+        if os.path.exists(image_path):
+            shutil.rmtree(image_path)
+        if os.path.exists(label_path):
+            shutil.rmtree(label_path)
+        os.makedirs("runtime", exist_ok=True)
+        shutil.copytree(self.image_folder_path, image_path)
+        shutil.copytree(self.label_folder_path, label_path)
         dataset_name = self.dataset_name_entry.get()
         dataset_dir = dnnTest.prepare_dataset(dataset_name=dataset_name, image_path=image_path, label_path=label_path)
-        print(dataset_dir)
 
         # Clear the current menu
         menu = self.data_menu['menu']
