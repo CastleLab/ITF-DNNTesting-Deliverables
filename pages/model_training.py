@@ -147,6 +147,8 @@ class ModelTrainingPage(tk.Frame):
         model_yaml_path = f"cfg/training/{model_name}.yaml"
         data_yaml_path = os.path.join("/root/MetaHand/tools/yolov7/data/", f"{data_name}.yaml")
         dnnTest.train_yolov7(proj_name=data_name, data_path=data_yaml_path, cfg_path=model_yaml_path)
+        print(f"Model training is finished. The best weights is saved in \
+        ./MetaHand/tools/yolov7/runs/train/{data_name}/weights/best.pt")
 
     def prepare_dataset(self):
         image_path = "./runtime/images"
