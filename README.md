@@ -1,6 +1,6 @@
 # Automatic Unreliable Inference Detection And Repairing
 
-![Workflow](./images/Workflow.png)
+![Workflow](./doc/Workflow.png)
 
 
 
