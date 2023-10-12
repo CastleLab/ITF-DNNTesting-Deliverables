@@ -1,11 +1,12 @@
-import tkinter as tk
-from tkinter import filedialog
-from PIL import Image, ImageTk
 import os
 import shutil
+import tkinter as tk
+from tkinter import filedialog
 
+from PIL import Image, ImageTk
 
 from api import DNNTest
+
 dnnTest = DNNTest("DNNTesting")
 
 
@@ -14,6 +15,7 @@ class ImageDetectionPage(tk.Frame):
         super().__init__()
         self.master = master
         self.image_detection_window = None
+        self.model_path = ""
         self.image_detection_page()
 
     def image_detection_page(self):
@@ -46,18 +48,23 @@ class ImageDetectionPage(tk.Frame):
         model_selection_frame = tk.Frame(model_frame)
         model_selection_frame.pack(side=tk.TOP)
 
-        # Create the "Select Model" label and option button
-        model_label = tk.Label(model_selection_frame, text="Select Model:")
-        model_label.pack(side=tk.LEFT)
+        from util import update_readonly_textbox
 
-        self.model_var = tk.StringVar()
-        model_list = self._load_model()
-        model_dropdown = tk.OptionMenu(model_selection_frame, self.model_var, *model_list)
-        self.model_var.set(model_list[0])
-        model_dropdown.pack(side=tk.LEFT)
+        def browse_label_path():
+            filepath = filedialog.askopenfilename(initialdir="./MetaHand/tools/yolov7/runs/train")
+            self.model_path = filepath
+            update_readonly_textbox(self.model_path_box, filepath)
 
-        detect_button = tk.Button(model_selection_frame, text="DETECT", command=self.detect)
-        detect_button.pack(side=tk.RIGHT)
+        model_path_frame = tk.Frame(model_selection_frame)
+        model_path_frame.pack(side=tk.LEFT)
+        self.model_path_button = tk.Button(model_path_frame, text="Select Original Model",
+                                           command=browse_label_path)
+        self.model_path_button.pack(side=tk.LEFT)
+        self.model_path_box = tk.Text(model_path_frame, height=1, width=20)
+        self.model_path_box.pack(side=tk.LEFT)
+
+        detect_button = tk.Button(model_path_frame, text="DETECT", command=self.detect)
+        detect_button.pack(side=tk.LEFT)
 
         # Create the image display frame
         self.detection_result_image = tk.Label(model_frame, width=50, height=20, relief="groove", borderwidth=2)
@@ -74,8 +81,12 @@ class ImageDetectionPage(tk.Frame):
         if not hasattr(self.image_label, "image") and not hasattr(self.image_label, "text"):
             raise ValueError("You should pick image fist!")
         image_path = self.image_label.text
-        model_name = self.model_var.get()
-        weights_path = f"/root/MetaHand/tools/yolov7/runs/train/{model_name}/weights/best.pt"
+        model_path = "./runtime/weights.pt"
+        if "tools/yolov7/" in self.model_path:
+            model_path = "./MetaHand/tools/yolov7/" + self.model_path.split("/tools/yolov7/")[-1]
+        else:
+            shutil.copy(self.model_path, model_path)
+        weights_path = os.path.join("/root", model_path)
         tmp_img_path = "./tmp/temp.jpg"
         os.makedirs("./tmp", exist_ok=True)
         shutil.copy(image_path, tmp_img_path)
@@ -100,5 +111,3 @@ class ImageDetectionPage(tk.Frame):
 
     def show_detection_result(self, img_path):
         self._display_image(self.detection_result_image, img_path)
-
-
