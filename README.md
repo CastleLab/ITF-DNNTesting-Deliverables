@@ -1,6 +1,6 @@
 # Automatic Unreliable Inference Detection And Repairing
 
-![Workflow](/Users/lmzn/Documents/Research/PhD/Projects/ITF/DNNTesting-Deliverables/Workflow.png)
+![Workflow](./images/Workflow.png)
 
 
 
