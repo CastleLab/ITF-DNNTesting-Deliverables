@@ -82,7 +82,7 @@ class ModelRepairingPage(tk.Frame):
                                                        default_entry_text="Enter the Number of Epoch",
                                                        des="Epoch: ")
 
-        self.dataset_button = tk.Button(dataset_preparation_frame, text="Start Model Evaluation",
+        self.dataset_button = tk.Button(dataset_preparation_frame, text="Start Model Repairing",
                                         command=self.repair_model)
         self.dataset_button.pack()
 
