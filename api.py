@@ -92,6 +92,7 @@ class DNNTest(object):
             mutate_ratio="03",
             mutate_strength=160,
             threshold=0.3,
+            image_size=640,
             jobs=8
     ):
         print(f"The weight path is: {weights_path}")
@@ -117,6 +118,7 @@ class DNNTest(object):
               f"-od={output_dir} " \
               f"--dataset=yolov7 " \
               f"--mr={MR} " \
+              f"-img_size={image_size} " \
               f"--jobs={jobs} " \
               f"--threshold={threshold}" \
               f"'"
