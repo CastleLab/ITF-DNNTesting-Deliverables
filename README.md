@@ -1,19 +1,24 @@
-# Automatic Unreliable Inference Detection And Repairing
+# Automatic Testing of DNN Models for Unreliable Inferences 
+
+This repository provides the system for the testing of deep learning models. Specifically, the system provides two main functions: 
+- testing and repairing object detection models include YOLOv3 and YOLOv7 models on popular datasets.
+- detecting numerical bugs for TensorFlow neural networks. 
+
+You can refer to this [demonstration video](https://hkustconnect-my.sharepoint.com/:v:/g/personal/mlick_connect_ust_hk/EXV8uDFtB1JFlXnbyclmzn8B4v2Gwj9J7_b6mVtslHNjuA?nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJPbmVEcml2ZUZvckJ1c2luZXNzIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXciLCJyZWZlcnJhbFZpZXciOiJNeUZpbGVzTGlua0RpcmVjdCJ9fQ&e=XBQWbd) to understand how to use our system.
 
 ![Workflow](./doc/ITF_Deliverable_Workflow.png)
 
+Our system can automatically detect unreliable inferences and further repair the performance of YOLOv3 and YOLOv7 model on customized hand dataset, COCO, and ImageNet dataset.
+Below is a snapshot of our experiment result on repairing YOLOv7, more details of how our system is designed and how effective is our system can be found on our [technical report](./doc/ITF_DNNTesting.pdf).
+
+![img.png](./doc/yolov7_repair_results.png)
 
 
-## Instruction For Build Environment
+## Instruction For Building The Environment
 
 ### Prepare all sources
 ```
-git clone git@github.com:maybeLee/DNNTesting-Deliverables.git
-cd DNNTesting-Deliverables
-git clone git@github.com:maybeLee/MetaHand.git
-git clone https://github.com/ForeverZyh/DEBAR.git
-cd MetaHand/tools
-git clone git@github.com:maybeLee/yolov7.git && cd ../../
+git clone --recursive git@github.com:CastleLab/ITF-DNNTesting-Deliverables.git
 cd DEBAR && \
 curl -L -o dataset.zip 'https://drive.google.com/uc?export=download&id=1GBHFd-fPIBWqJOpIC8ZO8g3F1LoIZYNn' && \
 unzip dataset.zip -d computation_graphs_and_TP_list && \
@@ -22,6 +27,8 @@ cd ../
 
 ### Build environments
 ```
+pip install -r requirements.txt
+
 # build container
 docker build -t dnntesting -f MetaHand/Dockerfile .
 docker run --ipc=host --name DNNTesting -ti -v ${PWD}:/root dnntesting:latest
@@ -47,10 +54,10 @@ cd MetaHand/tools/yolov7 && pip install -r requirements.txt
 # exit the container while keeping it running
 exit && docker start DNNTesting
 ```
+## How To Run.
 
-### Initiate the interface
-```
-pip install -r requirements.txt
-python gui.py
-```
+We provide a GUI interface for the easy of use. Simply running `python gui.py` in command line will launch our GUI interface.  
+We also provide a detailed guidelines on the usage of each module (see [here](./pages/README.md)).
+
+Instead, you can use our [APIs](./api.py) documented [here](./doc/usage.md).
 
