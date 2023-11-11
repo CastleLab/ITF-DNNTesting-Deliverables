@@ -26,8 +26,20 @@ cd ../
 ```
 
 ### Build environments
+
+Our system is designed with two environments: client environment and server environment. 
+
+To build the client environment:
+
 ```
 pip install -r requirements.txt
+```
+
+To build the server environment, you need to install [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) first (see how to install docker [here](https://codepyre.com/2019/01/installing-nvidia-docker2-on-ubuntu-18.0.4/)).
+
+After docker is installed correctly, please use following command to build the server's environment:
+
+```
 
 # build container
 docker build -t dnntesting -f MetaHand/Dockerfile .
@@ -54,6 +66,7 @@ cd MetaHand/tools/yolov7 && pip install -r requirements.txt
 # exit the container while keeping it running
 exit && docker start DNNTesting
 ```
+
 ## How To Run.
 
 We provide a GUI interface for the easy of use. Simply running `python gui.py` in command line will launch our GUI interface.  
