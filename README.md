@@ -1,6 +1,6 @@
 # Automatic Unreliable Inference Detection And Repairing
 
-![Workflow](./doc/Workflow.png)
+![Workflow](./doc/ITF Deliverable Workflow.png)
 
 
 

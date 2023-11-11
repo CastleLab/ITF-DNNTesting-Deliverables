@@ -1,0 +1,6 @@
+[submodule "MetaHand"]
+	path = MetaHand
+	url = git@github.com:maybeLee/MetaHand.git
+[submodule "DEBAR"]
+	path = DEBAR
+	url = https://github.com/ForeverZyh/DEBAR.git
